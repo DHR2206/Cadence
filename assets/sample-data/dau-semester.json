@@ -1,0 +1,52 @@
+{
+  "semester_start": "2026-06-22",
+  "weeks": 12,
+  "available_hours_per_week": 25,
+  "deadlines": [
+    {
+      "id": "cs401-project",
+      "course": "CS401",
+      "title": "AI Systems Final Project",
+      "due_date": "2026-07-31",
+      "difficulty": 5,
+      "estimated_hours": 14,
+      "priority": "high"
+    },
+    {
+      "id": "ma203-quiz",
+      "course": "MA203",
+      "title": "Probability Quiz",
+      "due_date": "2026-07-30",
+      "difficulty": 4,
+      "estimated_hours": 8,
+      "priority": "high"
+    },
+    {
+      "id": "phy205-lab",
+      "course": "PHY205",
+      "title": "Lab Report: Kinetics",
+      "due_date": "2026-08-01",
+      "difficulty": 3,
+      "estimated_hours": 6,
+      "priority": "medium"
+    },
+    {
+      "id": "hs101-essay",
+      "course": "HS101",
+      "title": "Ethics Reflection Essay",
+      "due_date": "2026-08-14",
+      "difficulty": 2,
+      "estimated_hours": 5,
+      "priority": "medium"
+    },
+    {
+      "id": "cs305-algo",
+      "course": "CS305",
+      "title": "Algorithms Assignment",
+      "due_date": "2026-08-27",
+      "difficulty": 4,
+      "estimated_hours": 10,
+      "priority": "high"
+    }
+  ]
+}
