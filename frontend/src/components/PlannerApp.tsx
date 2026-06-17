@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Clock3, Flame, Gauge, Target, Zap } from "lucide-react";
+import type { Tables } from "@/types/database";
 import { CollisionPanel } from "@/components/CollisionPanel";
 import { DeadlineForm } from "@/components/DeadlineForm";
 import { DeadlineList } from "@/components/DeadlineList";
@@ -11,6 +12,7 @@ import { SectionId, Sidebar } from "@/components/Sidebar";
 import { StudyPlanner } from "@/components/StudyPlanner";
 import { WorkloadChart } from "@/components/WorkloadChart";
 import { sampleDeadlines, sampleSettings } from "@/data/sampleSemester";
+import { deletePersistedDeadline, loadPersistedDeadlines, persistDeadline } from "@/lib/assignments";
 import {
   createEmptyPlan,
   DeadlineInput,
@@ -18,13 +20,14 @@ import {
   PlannerPlan,
   PlannerSettings
 } from "@/lib/plannerApi";
+import { createBrowserClient } from "@/lib/supabase/browser";
 
-const STORAGE_KEY = "cadence-planner-state-v1";
-
-type StoredPlannerState = {
-  settings: PlannerSettings;
-  deadlines: DeadlineInput[];
-  plan: PlannerPlan | null;
+type PlannerAppProps = {
+  user: {
+    id: string;
+    email: string;
+  };
+  initialProfile: Pick<Tables<"profiles">, "id" | "full_name" | "timezone" | "weekly_capacity_hours" | "preferred_study_time"> | null;
 };
 
 const defaultSettings: PlannerSettings = {
@@ -54,48 +57,57 @@ function workloadScore(plan: PlannerPlan) {
   return Math.min(10, Math.max(1, ratio * 8)).toFixed(1);
 }
 
-function isStoredPlannerState(value: unknown): value is StoredPlannerState {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-  const record = value as Partial<StoredPlannerState>;
-  return Boolean(record.settings && Array.isArray(record.deadlines));
+function displayName(profile: PlannerAppProps["initialProfile"], email: string) {
+  return profile?.full_name || email || "Student";
 }
 
-export function PlannerApp() {
+export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
+  const supabase = useMemo(() => createBrowserClient(), []);
   const [activeSection, setActiveSection] = useState<SectionId>("dashboard");
-  const [settings, setSettings] = useState<PlannerSettings>(defaultSettings);
+  const [settings, setSettings] = useState<PlannerSettings>({
+    ...defaultSettings,
+    availableHoursPerWeek: initialProfile?.weekly_capacity_hours ?? defaultSettings.availableHoursPerWeek
+  });
   const [deadlines, setDeadlines] = useState<DeadlineInput[]>([]);
-  const [plan, setPlan] = useState<PlannerPlan>(() => createEmptyPlan(defaultSettings));
+  const [plan, setPlan] = useState<PlannerPlan>(() =>
+    createEmptyPlan({
+      ...defaultSettings,
+      availableHoursPerWeek: initialProfile?.weekly_capacity_hours ?? defaultSettings.availableHoursPerWeek
+    })
+  );
   const [editingDeadline, setEditingDeadline] = useState<DeadlineInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    let isMounted = true;
+
+    async function loadDeadlines() {
+      setError(null);
+      setIsSyncing(true);
       try {
-        const parsed: unknown = JSON.parse(stored);
-        if (isStoredPlannerState(parsed)) {
-          setSettings(parsed.settings);
-          setDeadlines(parsed.deadlines);
-          setPlan(parsed.plan ?? createEmptyPlan(parsed.settings));
+        const persistedDeadlines = await loadPersistedDeadlines(supabase);
+        if (isMounted) {
+          setDeadlines(persistedDeadlines);
         }
       } catch {
-        window.localStorage.removeItem(STORAGE_KEY);
+        if (isMounted) {
+          setError("Cadence could not load your persisted deadlines from Supabase.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsSyncing(false);
+        }
       }
     }
-    setHydrated(true);
-  }, []);
 
-  useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-    const state: StoredPlannerState = { settings, deadlines, plan };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [deadlines, hydrated, plan, settings]);
+    void loadDeadlines();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase]);
 
   const nextDeadlineCount = useMemo(() => {
     const today = new Date();
@@ -121,26 +133,40 @@ export function PlannerApp() {
     }
   }
 
-  function saveDeadline(deadline: DeadlineInput) {
-    setDeadlines((current) => {
-      const exists = current.some((item) => item.id === deadline.id);
-      if (exists) {
-        return current.map((item) => (item.id === deadline.id ? deadline : item));
-      }
-      return [...current, deadline].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-    });
-    setEditingDeadline(null);
+  async function saveDeadline(deadline: DeadlineInput) {
+    setError(null);
+    try {
+      const persistedDeadline = await persistDeadline(supabase, user.id, deadline);
+      setDeadlines((current) => {
+        const exists = current.some((item) => item.id === persistedDeadline.id);
+        const nextDeadlines = exists
+          ? current.map((item) => (item.id === persistedDeadline.id ? persistedDeadline : item))
+          : [...current, persistedDeadline];
+
+        return nextDeadlines.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+      });
+      setEditingDeadline(null);
+    } catch {
+      setError("Cadence could not save this deadline. Check your Supabase connection and RLS policies.");
+      throw new Error("Deadline save failed");
+    }
   }
 
-  function deleteDeadline(id: string) {
-    setDeadlines((current) => {
-      const nextDeadlines = current.filter((deadline) => deadline.id !== id);
-      if (nextDeadlines.length === 0) {
-        setPlan(createEmptyPlan(settings));
-      }
-      return nextDeadlines;
-    });
-    setEditingDeadline((current) => (current?.id === id ? null : current));
+  async function deleteDeadline(id: string) {
+    setError(null);
+    try {
+      await deletePersistedDeadline(supabase, id);
+      setDeadlines((current) => {
+        const nextDeadlines = current.filter((deadline) => deadline.id !== id);
+        if (nextDeadlines.length === 0) {
+          setPlan(createEmptyPlan(settings));
+        }
+        return nextDeadlines;
+      });
+      setEditingDeadline((current) => (current?.id === id ? null : current));
+    } catch {
+      setError("Cadence could not delete this deadline from Supabase.");
+    }
   }
 
   function updateSettings(nextSettings: PlannerSettings) {
@@ -150,16 +176,45 @@ export function PlannerApp() {
       availableHoursPerWeek: Math.max(1, nextSettings.availableHoursPerWeek || 1)
     };
     setSettings(normalizedSettings);
+    if (normalizedSettings.availableHoursPerWeek !== settings.availableHoursPerWeek) {
+      void supabase
+        .from("profiles")
+        .update({ weekly_capacity_hours: Math.round(normalizedSettings.availableHoursPerWeek) })
+        .eq("id", user.id);
+    }
     if (deadlines.length === 0) {
       setPlan(createEmptyPlan(normalizedSettings));
     }
   }
 
-  function loadSampleData() {
+  async function loadSampleData() {
+    setError(null);
+    setIsSyncing(true);
     setSettings(sampleSettings);
-    setDeadlines(sampleDeadlines);
     setEditingDeadline(null);
-    void generatePlan(sampleSettings, sampleDeadlines);
+    try {
+      const persistedSamples: DeadlineInput[] = [];
+      for (const deadline of sampleDeadlines) {
+        persistedSamples.push(await persistDeadline(supabase, user.id, deadline));
+      }
+      setDeadlines((current) => {
+        const byTitleAndCourse = new Map(current.map((deadline) => [`${deadline.course}:${deadline.title}`, deadline]));
+        persistedSamples.forEach((deadline) => {
+          byTitleAndCourse.set(`${deadline.course}:${deadline.title}`, deadline);
+        });
+        return Array.from(byTitleAndCourse.values()).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+      });
+      void generatePlan(sampleSettings, persistedSamples);
+    } catch {
+      setError("Cadence could not persist the DAU sample data to Supabase.");
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    window.location.assign("/auth/sign-in");
   }
 
   const dashboard = (
@@ -181,14 +236,14 @@ export function PlannerApp() {
         <section className="glass-panel mb-8 rounded-3xl p-6">
           <p className="text-xl font-bold">Start with deadlines</p>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            Add a task manually or load the DAU sample data. Once deadlines exist, Cadence can generate collision warnings and a
-            balanced weekly study plan.
+            Add a task manually or load the DAU sample data. Cadence stores your deadlines in Supabase and uses them to generate
+            collision warnings and a balanced weekly study plan.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <button className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white" onClick={() => setActiveSection("courses")} type="button">
               Add Deadline
             </button>
-            <button className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-primary" onClick={loadSampleData} type="button">
+            <button className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-primary" onClick={() => void loadSampleData()} type="button">
               Load DAU Sample
             </button>
           </div>
@@ -204,7 +259,7 @@ export function PlannerApp() {
         isLoading={isLoading}
         onCancelEdit={() => setEditingDeadline(null)}
         onGenerate={() => void generatePlan()}
-        onLoadSample={loadSampleData}
+        onLoadSample={() => void loadSampleData()}
         onSave={saveDeadline}
         onSettingsChange={updateSettings}
         settings={settings}
@@ -246,14 +301,20 @@ export function PlannerApp() {
 
   return (
     <main className="min-h-screen lg:flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <Sidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onSignOut={() => void signOut()}
+        userEmail={user.email}
+        userName={displayName(initialProfile, user.email)}
+      />
       <section className="min-w-0 flex-1 px-5 py-6 md:px-8 lg:px-10">
         <header className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Functional MVP</p>
             <h1 className="text-4xl font-bold tracking-tight text-ink md:text-5xl">Cadence AI</h1>
             <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
-              Add deadlines, generate a real backend-powered plan, and switch between dashboard, courses, study plan, and analytics.
+              Add deadlines, keep them synced to Supabase, and generate a backend-powered plan from your academic workload.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -262,10 +323,10 @@ export function PlannerApp() {
             </button>
             <button
               className="rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold text-primary shadow-soft"
-              onClick={loadSampleData}
+              onClick={() => void loadSampleData()}
               type="button"
             >
-              Load Sample
+              {isSyncing ? "Syncing..." : "Load Sample"}
             </button>
             <button
               className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
@@ -283,6 +344,12 @@ export function PlannerApp() {
         {error ? (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
             {error}
+          </div>
+        ) : null}
+
+        {isSyncing ? (
+          <div className="mb-6 rounded-2xl border border-line bg-white/75 p-4 text-sm font-medium text-muted">
+            Syncing your Supabase deadlines...
           </div>
         ) : null}
 

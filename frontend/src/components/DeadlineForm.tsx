@@ -8,7 +8,7 @@ type DeadlineFormProps = {
   editingDeadline: DeadlineInput | null;
   settings: PlannerSettings;
   onSettingsChange: (settings: PlannerSettings) => void;
-  onSave: (deadline: DeadlineInput) => void;
+  onSave: (deadline: DeadlineInput) => Promise<void>;
   onCancelEdit: () => void;
   onLoadSample: () => void;
   onGenerate: () => void;
@@ -40,6 +40,7 @@ export function DeadlineForm({
   isLoading
 }: DeadlineFormProps) {
   const [form, setForm] = useState(emptyForm);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (editingDeadline) {
@@ -54,23 +55,28 @@ export function DeadlineForm({
     }
   }, [editingDeadline]);
 
-  function submitForm(event: React.FormEvent<HTMLFormElement>) {
+  async function submitForm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!form.course.trim() || !form.title.trim() || !form.dueDate) {
       return;
     }
 
-    onSave({
-      id: editingDeadline?.id ?? makeId(form.course, form.title),
-      course: form.course.trim().toUpperCase(),
-      title: form.title.trim(),
-      dueDate: form.dueDate,
-      difficulty: form.difficulty,
-      estimatedHours: Number.isFinite(form.estimatedHours) ? form.estimatedHours : null,
-      priority: form.priority
-    });
-
-    setForm(emptyForm);
+    setIsSaving(true);
+    try {
+      await onSave({
+        id: editingDeadline?.id ?? makeId(form.course, form.title),
+        courseId: editingDeadline?.courseId,
+        course: form.course.trim().toUpperCase(),
+        title: form.title.trim(),
+        dueDate: form.dueDate,
+        difficulty: form.difficulty,
+        estimatedHours: Number.isFinite(form.estimatedHours) ? form.estimatedHours : null,
+        priority: form.priority
+      });
+      setForm(emptyForm);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -91,7 +97,7 @@ export function DeadlineForm({
           </button>
           <button
             className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            disabled={isLoading}
+            disabled={isLoading || isSaving}
             onClick={onGenerate}
             type="button"
           >
@@ -201,9 +207,13 @@ export function DeadlineForm({
           </select>
         </label>
         <div className="flex items-end gap-3 md:col-span-4">
-          <button className="flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white" type="submit">
+          <button
+            className="flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white disabled:opacity-60"
+            disabled={isSaving}
+            type="submit"
+          >
             <Save size={16} />
-            {editingDeadline ? "Save Changes" : "Add Deadline"}
+            {isSaving ? "Saving..." : editingDeadline ? "Save Changes" : "Add Deadline"}
           </button>
           {editingDeadline ? (
             <button className="h-11 rounded-xl border border-line px-4 text-sm font-semibold text-muted" onClick={onCancelEdit} type="button">

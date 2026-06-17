@@ -3,6 +3,7 @@ export type Risk = "low" | "medium" | "high" | "crunch";
 
 export type DeadlineInput = {
   id: string;
+  courseId?: string;
   course: string;
   title: string;
   dueDate: string;

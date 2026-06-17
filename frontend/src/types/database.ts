@@ -191,6 +191,7 @@ export type Database = {
           id: string;
           plan_id: string;
           assignment_id: string | null;
+          title: string | null;
           starts_at: string;
           ends_at: string;
           status: Database["public"]["Enums"]["session_status"];
@@ -201,6 +202,7 @@ export type Database = {
           id?: string;
           plan_id: string;
           assignment_id?: string | null;
+          title?: string | null;
           starts_at: string;
           ends_at: string;
           status?: Database["public"]["Enums"]["session_status"];
@@ -211,6 +213,7 @@ export type Database = {
           id?: string;
           plan_id?: string;
           assignment_id?: string | null;
+          title?: string | null;
           starts_at?: string;
           ends_at?: string;
           status?: Database["public"]["Enums"]["session_status"];

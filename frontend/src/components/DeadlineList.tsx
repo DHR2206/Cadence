@@ -4,7 +4,7 @@ import type { DeadlineInput } from "@/lib/plannerApi";
 type DeadlineListProps = {
   deadlines: DeadlineInput[];
   onEdit: (deadline: DeadlineInput) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | Promise<void>;
 };
 
 export function DeadlineList({ deadlines, onEdit, onDelete }: DeadlineListProps) {

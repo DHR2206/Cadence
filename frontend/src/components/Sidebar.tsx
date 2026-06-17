@@ -33,9 +33,21 @@ const navItems: Array<{
 type SidebarProps = {
   activeSection: SectionId;
   onSectionChange: (section: SectionId) => void;
+  onSignOut: () => void;
+  userEmail: string;
+  userName: string;
 };
 
-export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "ST";
+}
+
+export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, userName }: SidebarProps) {
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-line/70 bg-white/72 p-5 shadow-soft backdrop-blur-xl lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3">
@@ -84,21 +96,25 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
       </nav>
 
       <div className="mt-8 border-t border-line pt-5">
-        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-700 hover:bg-slate-100" href="#">
+        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-700 hover:bg-slate-100" href="mailto:support@example.com">
           <HelpCircle size={19} />
           Help Center
         </a>
-        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-700 hover:bg-slate-100" href="#">
+        <button
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100"
+          onClick={onSignOut}
+          type="button"
+        >
           <LogOut size={19} />
           Logout
-        </a>
+        </button>
         <div className="mt-4 flex items-center gap-3 px-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-sm font-bold text-white">
-            DR
+            {initials(userName)}
           </div>
           <div>
-            <p className="font-semibold">Daksh Rathod</p>
-            <p className="text-xs text-muted">AI/ML and Backend</p>
+            <p className="font-semibold">{userName}</p>
+            <p className="max-w-40 truncate text-xs text-muted">{userEmail}</p>
           </div>
         </div>
       </div>
