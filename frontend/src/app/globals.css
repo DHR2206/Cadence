@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   color-scheme: light;
   --canvas: #f8f7ff;
   --panel: #ffffff;
@@ -10,6 +10,17 @@
   --muted: #62677a;
   --line: #dde2f2;
   --primary: #0f56d9;
+  --cyan: #06b6d4;
+} */
+
+:root {
+  color-scheme: light;
+  --canvas: #c8d9e6;
+  --panel: #2f4156;
+  --ink: white;
+  --muted: #62677a;
+  --line: #dde2f2;
+  --primary: #f5efeb;
   --cyan: #06b6d4;
 }
 
