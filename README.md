@@ -5,7 +5,7 @@ Cadence is an AI-powered deadline collision predictor and academic planner for D
 ## Mid-Evaluation Submission
 
 - **Public GitHub Repository:** https://github.com/DHR2206/cadence
-- **Hosted Frontend:** https://cadence-seven-eta.vercel.app/#
+- **Hosting :** https://cadence-seven-eta.vercel.app/#
 - **Current Stage:** MVP prototype for mid-evaluation review
 
 ## Problem Statement
