@@ -6,7 +6,10 @@ export function createBrowserClient() {
   const config = getSupabaseConfig();
 
   if (!config) {
-    throw new Error("Missing Supabase environment variables.");
+    return createSupabaseBrowserClient<Database>(
+      "https://placeholder.supabase.co",
+      "placeholder-anon-key"
+    );
   }
 
   return createSupabaseBrowserClient<Database>(config.url, config.publishableKey);

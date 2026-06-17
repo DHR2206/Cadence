@@ -69,3 +69,28 @@ export async function signOutAction() {
 
   redirect("/auth/sign-in");
 }
+
+export async function forgotPasswordAction(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+
+  if (!supabase) {
+    redirectWithMessage("/auth/forgot-password", "error", "Supabase environment variables are not configured.");
+  }
+
+  const email = formValue(formData, "email");
+
+  // Determine site origin for redirects
+  const origin = typeof window !== "undefined"
+    ? window.location.origin
+    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/auth/reset-password`
+  });
+
+  if (error) {
+    redirectWithMessage("/auth/forgot-password", "error", error.message);
+  }
+
+  redirectWithMessage("/auth/forgot-password", "message", "Check your email for a password reset link.");
+}

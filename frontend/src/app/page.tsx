@@ -34,9 +34,13 @@ export default async function Home() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, timezone, weekly_capacity_hours, preferred_study_time")
+    .select("*")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profile && !profile.onboarding_completed) {
+    redirect("/onboarding");
+  }
 
   return (
     <PlannerApp

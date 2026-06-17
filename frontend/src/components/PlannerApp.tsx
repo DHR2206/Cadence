@@ -11,6 +11,7 @@ import { MobileSectionNav } from "@/components/MobileSectionNav";
 import { SectionId, Sidebar } from "@/components/Sidebar";
 import { StudyPlanner } from "@/components/StudyPlanner";
 import { WorkloadChart } from "@/components/WorkloadChart";
+import { CalendarView } from "@/components/CalendarView";
 import { sampleDeadlines, sampleSettings } from "@/data/sampleSemester";
 import { deletePersistedDeadline, loadPersistedDeadlines, persistDeadline } from "@/lib/assignments";
 import {
@@ -27,7 +28,7 @@ type PlannerAppProps = {
     id: string;
     email: string;
   };
-  initialProfile: Pick<Tables<"profiles">, "id" | "full_name" | "timezone" | "weekly_capacity_hours" | "preferred_study_time"> | null;
+  initialProfile: Tables<"profiles"> | null;
 };
 
 const defaultSettings: PlannerSettings = {
@@ -311,8 +312,12 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
       <section className="min-w-0 flex-1 px-5 py-6 md:px-8 lg:px-10">
         <header className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
-            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Functional MVP</p>
-            <h1 className="text-4xl font-bold tracking-tight text-ink md:text-5xl">Cadence AI</h1>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+              {initialProfile?.university_name || "Academic Workspace"}
+            </p>
+            <h1 className="text-4xl font-bold tracking-tight text-ink md:text-5xl">
+              Cadence AI {initialProfile?.semester ? `• ${initialProfile.semester}` : ""}
+            </h1>
             <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
               Add deadlines, keep them synced to Supabase, and generate a backend-powered plan from your academic workload.
             </p>
@@ -356,8 +361,16 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         {activeSection === "dashboard" ? dashboard : null}
         {activeSection === "courses" ? courses : null}
         {activeSection === "study-plan" ? (
-          <StudyPlanner sessions={plan.studyPlan} availableHours={settings.availableHoursPerWeek} isLoading={isLoading} onGenerate={() => void generatePlan()} />
+          <StudyPlanner
+            availableHours={settings.availableHoursPerWeek}
+            isLoading={isLoading}
+            onGenerate={() => void generatePlan()}
+            preferredStudyTime={initialProfile?.preferred_study_time}
+            primaryFocus={deadlines[0]?.course || "General"}
+            sessions={plan.studyPlan}
+          />
         ) : null}
+        {activeSection === "calendar" ? <CalendarView /> : null}
         {activeSection === "analytics" ? analytics : null}
       </section>
     </main>

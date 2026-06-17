@@ -17,7 +17,7 @@ const tones = {
 
 export function MetricCard({ label, value, detail, icon: Icon, tone }: MetricCardProps) {
   return (
-    <article className="metric-card rounded-2xl p-5">
+    <article className="metric-card rounded-2xl p-5 hover:-translate-y-1 hover:shadow-glow transition-all duration-300 cursor-default">
       <div className="mb-8 flex items-start justify-between gap-4">
         <p className="max-w-[9rem] text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">{label}</p>
         <div className={`flex h-10 w-10 items-center justify-center rounded-full ${tones[tone]}`}>

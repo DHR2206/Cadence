@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthSubmitButton } from "@/components/AuthSubmitButton";
+import { AuthLayout } from "@/components/auth/AuthLayout";
 import { signInAction } from "@/app/auth/actions";
 
 type SignInPageProps = {
@@ -14,18 +15,16 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-5 py-10">
-      <section className="glass-panel w-full max-w-md rounded-3xl p-7">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Cadence AI</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">Sign in</h1>
-        <p className="mt-2 text-sm leading-6 text-muted">Access your protected academic workspace and persisted deadlines.</p>
-
-        {params.error ? (
-          <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800">{params.error}</p>
-        ) : null}
-        {params.message ? (
-          <p className="mt-5 rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-sm font-medium text-slate-800">{params.message}</p>
-        ) : null}
+    <AuthLayout
+      subtitle="Access your protected academic workspace and persisted deadlines."
+      title="Sign in"
+    >
+      {params.error ? (
+        <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-800">{params.error}</p>
+      ) : null}
+      {params.message ? (
+        <p className="mt-5 rounded-2xl border border-cyan-200 bg-cyan-50 p-3 text-sm font-medium text-slate-800">{params.message}</p>
+      ) : null}
 
         <form action={signInAction} className="mt-6 grid gap-4">
           <input name="next" type="hidden" value={params.next ?? "/"} />
@@ -59,7 +58,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             Create an account
           </Link>
         </p>
-      </section>
-    </main>
+      </AuthLayout>
   );
 }

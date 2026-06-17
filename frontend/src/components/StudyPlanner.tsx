@@ -1,4 +1,4 @@
-import { Save, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Bot, Save, SlidersHorizontal, Sparkles } from "lucide-react";
 import type { StudySession } from "@/lib/plannerApi";
 
 const tones = {
@@ -13,6 +13,8 @@ type StudyPlannerProps = {
   availableHours: number;
   isLoading: boolean;
   onGenerate: () => void;
+  preferredStudyTime?: string | null;
+  primaryFocus?: string | null;
 };
 
 function toneForSession(session: StudySession): keyof typeof tones {
@@ -28,7 +30,14 @@ function toneForSession(session: StudySession): keyof typeof tones {
   return "lavender";
 }
 
-export function StudyPlanner({ sessions, availableHours, isLoading, onGenerate }: StudyPlannerProps) {
+export function StudyPlanner({
+  sessions,
+  availableHours,
+  isLoading,
+  onGenerate,
+  preferredStudyTime = "morning",
+  primaryFocus = "General"
+}: StudyPlannerProps) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const visibleSessions = sessions.slice(0, 12);
   const totalHours = sessions.reduce((sum, session) => sum + session.hours, 0);
@@ -62,15 +71,15 @@ export function StudyPlanner({ sessions, availableHours, isLoading, onGenerate }
         <div className="mb-6 grid gap-4 rounded-2xl border border-line bg-white/72 p-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Study hours / week</p>
-            <p className="mt-2 text-xl font-bold">25h</p>
+            <p className="mt-2 text-xl font-bold">{availableHours}h</p>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Primary focus</p>
-            <p className="mt-2 text-xl font-bold">CS401 Project</p>
+            <p className="mt-2 text-xl font-bold capitalize">{primaryFocus || "General"}</p>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Peak energy</p>
-            <p className="mt-2 text-xl font-bold">Morning</p>
+            <p className="mt-2 text-xl font-bold capitalize">{preferredStudyTime || "Morning"}</p>
           </div>
         </div>
 
@@ -108,24 +117,69 @@ export function StudyPlanner({ sessions, availableHours, isLoading, onGenerate }
       </div>
 
       <aside className="space-y-6">
-        <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 shadow-soft">
-          <p className="font-bold text-primary">Cadence Insight</p>
-          <p className="mt-3 text-sm leading-6 text-slate-700">
-            Cadence prioritizes high-difficulty work in focused blocks and spreads preparation across earlier weeks when possible.
+        {/* Cadence Insight Bot Box */}
+        <div className="rounded-3xl border border-blue-100 bg-blue-50/50 p-5 shadow-soft">
+          <div className="flex gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
+              <Bot size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-primary">Cadence Insight</p>
+              <p className="text-xs text-muted mt-0.5">Automated suggestions</p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-slate-700">
+            You&apos;ve scheduled heavy quantitative tasks during your peak morning hours. Excellent. Consider adding a 15-minute buffer after Calculus on Wednesday.
           </p>
-          <button className="mt-4 w-full rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary">
+          <button className="mt-4 w-full rounded-xl border border-primary bg-white py-2 text-xs font-bold text-primary hover:bg-blue-50 transition" type="button">
             Apply Suggestion
           </button>
         </div>
-        <div className="rounded-3xl border border-line bg-white/80 p-5 shadow-soft">
+
+        {/* Weekly Workload Progress */}
+        <div className="rounded-3xl border border-line bg-white p-5 shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Weekly workload</p>
-          <div className="mt-6 flex items-end gap-2">
-            <p className="text-3xl font-bold">{cappedHours}</p>
+          <div className="mt-4 flex items-end gap-2">
+            <p className="text-3xl font-extrabold text-ink">{cappedHours}</p>
             <p className="pb-1 text-sm text-muted">/ {availableHours} hrs</p>
-            <span className="ml-auto rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800">Optimal</span>
+            <span className="ml-auto rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">Optimal</span>
           </div>
-          <div className="mt-4 h-3 rounded-full bg-slate-100">
-            <div className="h-3 rounded-full bg-cyan" style={{ width: `${Math.min(100, (cappedHours / availableHours) * 100)}%` }} />
+          <div className="mt-4 h-3.5 rounded-full bg-slate-100 overflow-hidden">
+            <div 
+              className="h-full rounded-full bg-emerald-500 transition-all duration-500 shadow-glow" 
+              style={{ width: `${Math.min(100, (cappedHours / availableHours) * 100)}%` }} 
+            />
+          </div>
+        </div>
+
+        {/* Upcoming Milestones */}
+        <div className="rounded-3xl border border-line bg-white p-5 shadow-soft">
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Upcoming Milestones</p>
+            <button className="text-xs font-bold text-muted hover:text-ink">•••</button>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 rounded-full bg-red-500 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-ink">Calculus Midterm</p>
+                <p className="text-[10px] font-semibold text-muted mt-0.5">Oct 24 • In 3 days</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 rounded-full bg-orange-500 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-ink">CS Project Alpha Draft</p>
+                <p className="text-[10px] font-semibold text-muted mt-0.5">Oct 28 • In 7 days</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 rounded-full bg-cyan shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-ink">Physics Lab Report</p>
+                <p className="text-[10px] font-semibold text-muted mt-0.5">Nov 02 • In 12 days</p>
+              </div>
+            </div>
           </div>
         </div>
       </aside>

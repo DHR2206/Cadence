@@ -16,6 +16,9 @@ export type Database = {
           timezone: string;
           weekly_capacity_hours: number;
           preferred_study_time: string | null;
+          university_name: string | null;
+          semester: string | null;
+          onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -25,6 +28,9 @@ export type Database = {
           timezone?: string;
           weekly_capacity_hours?: number;
           preferred_study_time?: string | null;
+          university_name?: string | null;
+          semester?: string | null;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -34,6 +40,9 @@ export type Database = {
           timezone?: string;
           weekly_capacity_hours?: number;
           preferred_study_time?: string | null;
+          university_name?: string | null;
+          semester?: string | null;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };

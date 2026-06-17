@@ -12,17 +12,17 @@ import {
   Sparkles
 } from "lucide-react";
 
-export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics";
+export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics" | "calendar";
 
 const navItems: Array<{
-  id: SectionId | "calendar" | "assistant" | "settings";
+  id: SectionId | "assistant" | "settings";
   label: string;
   icon: typeof LayoutDashboard;
   dot?: boolean;
   disabled?: boolean;
 }> = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "calendar", label: "Calendar", icon: CalendarDays, disabled: true },
+  { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "courses", label: "Courses", icon: GraduationCap },
   { id: "study-plan", label: "Study Plan", icon: BookOpenText },
   { id: "analytics", label: "Analytics", icon: BarChart3 },

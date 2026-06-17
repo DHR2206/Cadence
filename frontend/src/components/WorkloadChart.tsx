@@ -27,20 +27,20 @@ export function WorkloadChart({ weeks }: { weeks: WorkloadWeek[] }) {
 
       <div className="grid h-80 grid-cols-6 items-end gap-3 border-t border-line pt-6 md:grid-cols-12">
         {weeks.map((week) => (
-          <div className="flex h-full flex-col items-center justify-end gap-2" key={week.label}>
-            <div className="flex h-60 w-full max-w-12 items-end justify-center gap-1 rounded-full">
+          <div className="flex h-full flex-col items-center justify-end gap-2 hover:scale-[1.03] transition-all duration-300" key={week.label}>
+            <div className="flex h-60 w-full max-w-12 items-end justify-center gap-1 rounded-full bg-slate-50/50 p-1 border border-slate-100">
               <div
-                className={`${riskColor[week.risk]} w-4 rounded-t-full opacity-35`}
+                className={`${riskColor[week.risk]} w-3.5 rounded-t-full opacity-30 transition-all duration-500 ease-out`}
                 style={{ height: `${(week.beforeHours / maxHours) * 100}%` }}
                 title={`${week.label} before: ${week.beforeHours}h`}
               />
               <div
-                className="w-4 rounded-t-full bg-primary shadow-glow"
+                className="w-3.5 rounded-t-full bg-gradient-to-t from-blue-600 to-primary shadow-glow transition-all duration-500 ease-out"
                 style={{ height: `${(week.afterHours / maxHours) * 100}%` }}
                 title={`${week.label} after: ${week.afterHours}h`}
               />
             </div>
-            <span className={`text-xs font-semibold ${week.risk === "crunch" ? "text-red-700" : "text-slate-700"}`}>
+            <span className={`text-xs font-semibold ${week.risk === "crunch" ? "text-red-600" : "text-slate-500"}`}>
               {week.label}
             </span>
           </div>
