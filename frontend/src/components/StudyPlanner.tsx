@@ -13,6 +13,8 @@ type StudyPlannerProps = {
   availableHours: number;
   isLoading: boolean;
   onGenerate: () => void;
+  onSavePlan?: () => void;
+  isSavingPlan?: boolean;
   preferredStudyTime?: string | null;
   primaryFocus?: string | null;
 };
@@ -35,6 +37,8 @@ export function StudyPlanner({
   availableHours,
   isLoading,
   onGenerate,
+  onSavePlan,
+  isSavingPlan = false,
   preferredStudyTime = "morning",
   primaryFocus = "General"
 }: StudyPlannerProps) {
@@ -54,16 +58,21 @@ export function StudyPlanner({
           <div className="flex gap-3">
             <button
               className="flex items-center gap-2 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-primary disabled:opacity-60"
-              disabled={isLoading}
+              disabled={isLoading || isSavingPlan}
               onClick={onGenerate}
               type="button"
             >
               <Sparkles size={17} />
               {isLoading ? "Balancing..." : "Auto-rebalance"}
             </button>
-            <button className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">
+            <button
+              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 shadow-glow"
+              disabled={isLoading || isSavingPlan || sessions.length === 0}
+              onClick={onSavePlan}
+              type="button"
+            >
               <Save size={17} />
-              Save Plan
+              {isSavingPlan ? "Saving..." : "Save Plan"}
             </button>
           </div>
         </div>

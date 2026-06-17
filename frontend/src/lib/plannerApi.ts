@@ -60,6 +60,7 @@ type ApiPlanResponse = {
     title: string;
     hours: number;
     type: "deep-work" | "study";
+    assignment_id?: string;
   }>;
   summary: {
     deadline_count: number;
@@ -106,6 +107,9 @@ export type StudySession = {
   title: string;
   hours: number;
   type: "deep-work" | "study";
+  assignmentId?: string;
+  starts_at?: string;
+  ends_at?: string;
 };
 
 export type PlannerPlan = {
@@ -170,7 +174,8 @@ function mapPlanResponse(response: ApiPlanResponse): PlannerPlan {
       course: session.course,
       title: session.title,
       hours: session.hours,
-      type: session.type
+      type: session.type,
+      assignmentId: session.assignment_id
     })),
     summary: {
       deadlineCount: response.summary.deadline_count,

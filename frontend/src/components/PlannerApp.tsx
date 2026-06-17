@@ -22,6 +22,7 @@ import {
   PlannerSettings
 } from "@/lib/plannerApi";
 import { createBrowserClient } from "@/lib/supabase/browser";
+import { loadActiveStudyPlan, saveStudyPlan, saveSemesterSettings } from "@/lib/plans";
 
 type PlannerAppProps = {
   user: {
@@ -66,25 +67,28 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
   const supabase = useMemo(() => createBrowserClient(), []);
   const [activeSection, setActiveSection] = useState<SectionId>("dashboard");
   const [settings, setSettings] = useState<PlannerSettings>({
-    ...defaultSettings,
+    semesterStart: initialProfile?.semester_start ?? defaultSettings.semesterStart,
+    weeks: initialProfile?.semester_weeks ?? defaultSettings.weeks,
     availableHoursPerWeek: initialProfile?.weekly_capacity_hours ?? defaultSettings.availableHoursPerWeek
   });
   const [deadlines, setDeadlines] = useState<DeadlineInput[]>([]);
   const [plan, setPlan] = useState<PlannerPlan>(() =>
     createEmptyPlan({
-      ...defaultSettings,
+      semesterStart: initialProfile?.semester_start ?? defaultSettings.semesterStart,
+      weeks: initialProfile?.semester_weeks ?? defaultSettings.weeks,
       availableHoursPerWeek: initialProfile?.weekly_capacity_hours ?? defaultSettings.availableHoursPerWeek
     })
   );
   const [editingDeadline, setEditingDeadline] = useState<DeadlineInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(true);
+  const [isSavingPlan, setIsSavingPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadDeadlines() {
+    async function loadData() {
       setError(null);
       setIsSyncing(true);
       try {
@@ -92,9 +96,20 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         if (isMounted) {
           setDeadlines(persistedDeadlines);
         }
+
+        const activePlanResult = await loadActiveStudyPlan(supabase);
+        if (isMounted && activePlanResult) {
+          setPlan(activePlanResult.plan);
+          setSettings((current) => ({
+            ...current,
+            semesterStart: activePlanResult.settings.semesterStart,
+            weeks: activePlanResult.settings.weeks,
+            availableHoursPerWeek: activePlanResult.settings.availableHoursPerWeek
+          }));
+        }
       } catch {
         if (isMounted) {
-          setError("Cadence could not load your persisted deadlines from Supabase.");
+          setError("Cadence could not load your persisted deadlines or study plan from Supabase.");
         }
       } finally {
         if (isMounted) {
@@ -103,7 +118,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
       }
     }
 
-    void loadDeadlines();
+    void loadData();
 
     return () => {
       isMounted = false;
@@ -177,14 +192,37 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
       availableHoursPerWeek: Math.max(1, nextSettings.availableHoursPerWeek || 1)
     };
     setSettings(normalizedSettings);
+    
+    // Persist capacity
     if (normalizedSettings.availableHoursPerWeek !== settings.availableHoursPerWeek) {
       void supabase
         .from("profiles")
         .update({ weekly_capacity_hours: Math.round(normalizedSettings.availableHoursPerWeek) })
         .eq("id", user.id);
     }
+
+    // Persist semester_start / semester_weeks
+    if (
+      normalizedSettings.semesterStart !== settings.semesterStart ||
+      normalizedSettings.weeks !== settings.weeks
+    ) {
+      void saveSemesterSettings(supabase, user.id, normalizedSettings.semesterStart, normalizedSettings.weeks);
+    }
+
     if (deadlines.length === 0) {
       setPlan(createEmptyPlan(normalizedSettings));
+    }
+  }
+
+  async function handleSavePlan() {
+    setError(null);
+    setIsSavingPlan(true);
+    try {
+      await saveStudyPlan(supabase, user.id, plan, settings);
+    } catch {
+      setError("Cadence could not save your study plan to Supabase.");
+    } finally {
+      setIsSavingPlan(false);
     }
   }
 
@@ -365,12 +403,20 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             availableHours={settings.availableHoursPerWeek}
             isLoading={isLoading}
             onGenerate={() => void generatePlan()}
+            onSavePlan={handleSavePlan}
+            isSavingPlan={isSavingPlan}
             preferredStudyTime={initialProfile?.preferred_study_time}
             primaryFocus={deadlines[0]?.course || "General"}
             sessions={plan.studyPlan}
           />
         ) : null}
-        {activeSection === "calendar" ? <CalendarView /> : null}
+        {activeSection === "calendar" ? (
+          <CalendarView
+            sessions={plan.studyPlan}
+            deadlines={deadlines}
+            settings={settings}
+          />
+        ) : null}
         {activeSection === "analytics" ? analytics : null}
       </section>
     </main>

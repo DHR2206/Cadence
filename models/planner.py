@@ -120,6 +120,7 @@ def _daily_slots(week: int, hours: float, deadline: Deadline) -> list[dict[str, 
                 "title": deadline.title,
                 "hours": session_hours,
                 "type": "deep-work" if deadline.difficulty >= 4 else "study",
+                "assignment_id": deadline.id,
             }
         )
         remaining = round(remaining - session_hours, 1)

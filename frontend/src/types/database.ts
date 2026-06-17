@@ -19,6 +19,8 @@ export type Database = {
           university_name: string | null;
           semester: string | null;
           onboarding_completed: boolean;
+          semester_start: string | null;
+          semester_weeks: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -31,6 +33,8 @@ export type Database = {
           university_name?: string | null;
           semester?: string | null;
           onboarding_completed?: boolean;
+          semester_start?: string | null;
+          semester_weeks?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -43,6 +47,8 @@ export type Database = {
           university_name?: string | null;
           semester?: string | null;
           onboarding_completed?: boolean;
+          semester_start?: string | null;
+          semester_weeks?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -204,6 +210,7 @@ export type Database = {
           starts_at: string;
           ends_at: string;
           status: Database["public"]["Enums"]["session_status"];
+          type: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -215,6 +222,7 @@ export type Database = {
           starts_at: string;
           ends_at: string;
           status?: Database["public"]["Enums"]["session_status"];
+          type?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -226,6 +234,7 @@ export type Database = {
           starts_at?: string;
           ends_at?: string;
           status?: Database["public"]["Enums"]["session_status"];
+          type?: string | null;
           created_at?: string;
           updated_at?: string;
         };

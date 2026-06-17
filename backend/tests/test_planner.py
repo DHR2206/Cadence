@@ -87,3 +87,5 @@ def test_replanning_spreads_work_before_due_week():
     allocated_weeks = {item["week"] for item in result.study_plan}
     assert {4, 5, 6}.issubset(allocated_weeks)
     assert result.summary["peak_after_hours"] < result.summary["peak_before_hours"]
+    assert all("assignment_id" in item for item in result.study_plan)
+    assert result.study_plan[0]["assignment_id"] == "d1"
