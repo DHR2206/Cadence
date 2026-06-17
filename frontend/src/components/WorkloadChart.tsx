@@ -1,4 +1,4 @@
-import type { WorkloadWeek } from "@/data/demoPlan";
+import type { WorkloadWeek } from "@/lib/plannerApi";
 
 const riskColor = {
   low: "bg-blue-500",
@@ -25,7 +25,7 @@ export function WorkloadChart({ weeks }: { weeks: WorkloadWeek[] }) {
         </div>
       </div>
 
-      <div className="grid h-80 grid-cols-12 items-end gap-3 border-t border-line pt-6">
+      <div className="grid h-80 grid-cols-6 items-end gap-3 border-t border-line pt-6 md:grid-cols-12">
         {weeks.map((week) => (
           <div className="flex h-full flex-col items-center justify-end gap-2" key={week.label}>
             <div className="flex h-60 w-full max-w-12 items-end justify-center gap-1 rounded-full">

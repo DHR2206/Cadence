@@ -12,17 +12,30 @@ import {
   Sparkles
 } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, active: true },
-  { label: "Calendar", icon: CalendarDays },
-  { label: "Courses", icon: GraduationCap },
-  { label: "Study Plan", icon: BookOpenText },
-  { label: "Analytics", icon: BarChart3 },
-  { label: "AI Assistant", icon: Bot, dot: true },
-  { label: "Settings", icon: Settings }
+export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics";
+
+const navItems: Array<{
+  id: SectionId | "calendar" | "assistant" | "settings";
+  label: string;
+  icon: typeof LayoutDashboard;
+  dot?: boolean;
+  disabled?: boolean;
+}> = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "calendar", label: "Calendar", icon: CalendarDays, disabled: true },
+  { id: "courses", label: "Courses", icon: GraduationCap },
+  { id: "study-plan", label: "Study Plan", icon: BookOpenText },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "assistant", label: "AI Assistant", icon: Bot, dot: true, disabled: true },
+  { id: "settings", label: "Settings", icon: Settings, disabled: true }
 ];
 
-export function Sidebar() {
+type SidebarProps = {
+  activeSection: SectionId;
+  onSectionChange: (section: SectionId) => void;
+};
+
+export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-line/70 bg-white/72 p-5 shadow-soft backdrop-blur-xl lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3">
@@ -43,20 +56,29 @@ export function Sidebar() {
       <nav className="flex flex-1 flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const active = item.id === activeSection;
           return (
-            <a
+            <button
               className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                item.active
+                active
                   ? "translate-x-1 border-l-4 border-primary bg-blue-50 text-primary"
-                  : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                  : item.disabled
+                    ? "cursor-not-allowed text-slate-400"
+                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
               }`}
-              href="#"
+              disabled={item.disabled}
               key={item.label}
+              onClick={() => {
+                if (!item.disabled) {
+                  onSectionChange(item.id as SectionId);
+                }
+              }}
+              type="button"
             >
               <Icon size={19} />
               {item.label}
               {item.dot ? <span className="ml-auto h-2 w-2 rounded-full bg-cyan" /> : null}
-            </a>
+            </button>
           );
         })}
       </nav>

@@ -1,5 +1,5 @@
 import { Save, SlidersHorizontal, Sparkles } from "lucide-react";
-import { studyBlocks } from "@/data/demoPlan";
+import type { StudySession } from "@/lib/plannerApi";
 
 const tones = {
   blue: "border-blue-200 bg-blue-50 text-blue-900",
@@ -8,8 +8,31 @@ const tones = {
   lavender: "border-violet-200 bg-violet-50 text-violet-900"
 };
 
-export function StudyPlanner() {
+type StudyPlannerProps = {
+  sessions: StudySession[];
+  availableHours: number;
+  isLoading: boolean;
+  onGenerate: () => void;
+};
+
+function toneForSession(session: StudySession): keyof typeof tones {
+  if (session.type === "deep-work") {
+    return "blue";
+  }
+  if (session.course.toLowerCase().includes("phy")) {
+    return "cyan";
+  }
+  if (session.course.toLowerCase().includes("ma")) {
+    return "peach";
+  }
+  return "lavender";
+}
+
+export function StudyPlanner({ sessions, availableHours, isLoading, onGenerate }: StudyPlannerProps) {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const visibleSessions = sessions.slice(0, 12);
+  const totalHours = sessions.reduce((sum, session) => sum + session.hours, 0);
+  const cappedHours = Math.min(availableHours, Math.round(totalHours));
 
   return (
     <section className="grid gap-6 xl:grid-cols-[1fr_24rem]">
@@ -20,9 +43,14 @@ export function StudyPlanner() {
             <p className="mt-1 text-sm text-muted">Balanced weekly plan generated from deadline pressure and available hours.</p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-primary">
+            <button
+              className="flex items-center gap-2 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-primary disabled:opacity-60"
+              disabled={isLoading}
+              onClick={onGenerate}
+              type="button"
+            >
               <Sparkles size={17} />
-              Auto-rebalance
+              {isLoading ? "Balancing..." : "Auto-rebalance"}
             </button>
             <button className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">
               <Save size={17} />
@@ -59,11 +87,11 @@ export function StudyPlanner() {
             <div className="min-h-52 rounded-2xl bg-slate-50/80 p-3" key={day}>
               <p className="mb-3 text-center text-sm font-semibold text-slate-700">{day}</p>
               <div className="space-y-3">
-                {studyBlocks
+                {visibleSessions
                   .filter((block) => block.day === day)
                   .map((block) => (
-                    <div className={`rounded-xl border p-3 ${tones[block.tone]}`} key={`${block.day}-${block.time}`}>
-                      <p className="text-xs font-semibold">{block.time}</p>
+                    <div className={`rounded-xl border p-3 ${tones[toneForSession(block)]}`} key={`${block.week}-${block.day}-${block.start}-${block.title}`}>
+                      <p className="text-xs font-semibold">{block.start} - {block.end}</p>
                       <p className="mt-2 font-bold">{block.course}</p>
                       <p className="mt-1 text-sm">{block.title}</p>
                     </div>
@@ -72,13 +100,18 @@ export function StudyPlanner() {
             </div>
           ))}
         </div>
+        {sessions.length === 0 ? (
+          <div className="mt-5 rounded-2xl border border-dashed border-line bg-white/70 p-5 text-sm leading-6 text-muted">
+            Generate a plan after adding deadlines. Cadence will place study blocks here by weekday and task type.
+          </div>
+        ) : null}
       </div>
 
       <aside className="space-y-6">
         <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 shadow-soft">
           <p className="font-bold text-primary">Cadence Insight</p>
           <p className="mt-3 text-sm leading-6 text-slate-700">
-            Heavy quantitative tasks are scheduled during morning focus windows, with a short buffer after each deep-work block.
+            Cadence prioritizes high-difficulty work in focused blocks and spreads preparation across earlier weeks when possible.
           </p>
           <button className="mt-4 w-full rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary">
             Apply Suggestion
@@ -87,12 +120,12 @@ export function StudyPlanner() {
         <div className="rounded-3xl border border-line bg-white/80 p-5 shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Weekly workload</p>
           <div className="mt-6 flex items-end gap-2">
-            <p className="text-3xl font-bold">22</p>
-            <p className="pb-1 text-sm text-muted">/ 25 hrs</p>
+            <p className="text-3xl font-bold">{cappedHours}</p>
+            <p className="pb-1 text-sm text-muted">/ {availableHours} hrs</p>
             <span className="ml-auto rounded-full bg-cyan-100 px-3 py-1 text-xs font-bold text-cyan-800">Optimal</span>
           </div>
           <div className="mt-4 h-3 rounded-full bg-slate-100">
-            <div className="h-3 w-[88%] rounded-full bg-cyan" />
+            <div className="h-3 rounded-full bg-cyan" style={{ width: `${Math.min(100, (cappedHours / availableHours) * 100)}%` }} />
           </div>
         </div>
       </aside>
