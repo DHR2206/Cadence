@@ -45,18 +45,22 @@ export async function signInWithGoogleAction() {
     process.env.NEXT_PUBLIC_SITE_URL ||
     "https://cadence-seven-eta.vercel.app";
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${origin}/auth/callback`
-    }
-  });
-
-  if (error) {
-    redirect(`/auth/sign-in?error=${encodeURIComponent(error.message)}`);
+const { data, error } = await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: `${origin}/auth/callback`
   }
+});
 
-  redirect(data.url);
+console.log("SITE URL:", origin);
+console.log("CALLBACK URL:", `${origin}/auth/callback`);
+console.log("OAUTH URL:", data?.url);
+
+if (error) {
+  redirect(`/auth/sign-in?error=${encodeURIComponent(error.message)}`);
+}
+
+redirect(data.url);
 }
 //ending the signin with google function
 
