@@ -43,7 +43,7 @@ export async function signInWithGoogleAction() {
 
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL ||
-    "http://localhost:3000";
+    "https://cadence-seven-eta.vercel.app";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
