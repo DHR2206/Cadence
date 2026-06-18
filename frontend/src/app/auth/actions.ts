@@ -33,36 +33,8 @@ export async function signInAction(formData: FormData)
   redirect(next.startsWith("/") ? next : "/");
 }
 
-//starting the signin with google function
-export async function signInWithGoogleAction() {
-  const supabase = await createServerSupabaseClient();
-
-  if (!supabase) {
-    redirect("/auth/sign-in?error=Supabase not configured");
-  }
-
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "https://cadence-seven-eta.vercel.app";
-
-const { data, error } = await supabase.auth.signInWithOAuth({
-  provider: "google",
-  options: {
-    redirectTo: `${origin}/auth/callback`
-  }
-});
-
-console.log("SITE URL:", origin);
-console.log("CALLBACK URL:", `${origin}/auth/callback`);
-console.log("OAUTH URL:", data?.url);
-
-if (error) {
-  redirect(`/auth/sign-in?error=${encodeURIComponent(error.message)}`);
-}
-
-redirect(data.url);
-}
-//ending the signin with google function
+// Google OAuth is handled by Route Handler at /auth/sign-in/google/route.ts
+// (Server Actions cannot persist PKCE cookies on external redirects)
 
 export async function signUpAction(formData: FormData) {
   const supabase = await createServerSupabaseClient();
