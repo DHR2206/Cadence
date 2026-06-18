@@ -355,7 +355,11 @@ export function AISettings({ userId, initialProfile }: AISettingsProps) {
                   <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-500">
                     {m.memory_type}
                   </span>
-                  <p className="mt-1.5 text-xs font-medium text-slate-700 leading-5">"{m.content}"</p>
+
+<p className="mt-1.5 text-xs font-medium text-slate-700 leading-5">
+  {`"${m.content}"`}
+</p>
+
                   <p className="mt-1 text-[8px] text-muted">Created: {new Date(m.created_at).toLocaleDateString()}</p>
                 </div>
                 <button
