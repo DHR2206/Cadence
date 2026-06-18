@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bell, Clock3, Flame, Gauge, Target, Zap } from "lucide-react";
+import { Bell, Clock3, Flame, Gauge, Target, Zap, Sparkles } from "lucide-react";
 import type { Tables } from "@/types/database";
 import { CollisionPanel } from "@/components/CollisionPanel";
 import { DeadlineForm } from "@/components/DeadlineForm";
@@ -23,6 +23,10 @@ import {
 } from "@/lib/plannerApi";
 import { createBrowserClient } from "@/lib/supabase/browser";
 import { loadActiveStudyPlan, saveStudyPlan, saveSemesterSettings } from "@/lib/plans";
+import { AIAssistant } from "@/components/AIAssistant";
+import { AISettings } from "@/components/AISettings";
+import { ExplanationCard } from "@/components/ExplanationCard";
+import { generateAIPlanAction } from "@/app/actions/ai";
 
 type PlannerAppProps = {
   user: {
@@ -80,6 +84,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
     })
   );
   const [editingDeadline, setEditingDeadline] = useState<DeadlineInput | null>(null);
+  const [aiPrioritizedTasks, setAiPrioritizedTasks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(true);
   const [isSavingPlan, setIsSavingPlan] = useState(false);
@@ -106,6 +111,21 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             weeks: activePlanResult.settings.weeks,
             availableHoursPerWeek: activePlanResult.settings.availableHoursPerWeek
           }));
+
+          // Fetch prioritized tasks from latest study plan metadata
+          const { data: latestPlan } = await supabase
+            .from("study_plans")
+            .select("metadata")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (isMounted && latestPlan && latestPlan.metadata) {
+            const meta = latestPlan.metadata as any;
+            if (meta.prioritized_tasks) {
+              setAiPrioritizedTasks(meta.prioritized_tasks);
+            }
+          }
         }
       } catch {
         if (isMounted) {
@@ -123,7 +143,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
     return () => {
       isMounted = false;
     };
-  }, [supabase]);
+  }, [supabase, user.id]);
 
   const nextDeadlineCount = useMemo(() => {
     const today = new Date();
@@ -134,16 +154,89 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
     setError(null);
     if (nextDeadlines.length === 0) {
       setPlan(createEmptyPlan(nextSettings));
+      setAiPrioritizedTasks([]);
       return;
     }
 
     setIsLoading(true);
     try {
-      const generated = await generatePlannerPlan(nextSettings, nextDeadlines);
-      setPlan(generated);
+      const result = await generateAIPlanAction();
+
+      // Map ScheduledSession to StudySession
+      const studySessions = result.studySessions.map((s) => ({
+        week: s.week,
+        day: s.day,
+        start: s.start,
+        end: s.end,
+        course: s.course,
+        title: s.title,
+        hours: s.hours,
+        type: s.type as "deep-work" | "study",
+        assignmentId: s.assignmentId
+      }));
+
+      // Reconstruct workload by week
+      const workloadByWeek = result.weeklyWorkload.map((w) => {
+        const deadlineCount = nextDeadlines.filter((d) => {
+          const start = new Date(nextSettings.semesterStart);
+          const due = new Date(d.dueDate);
+          const diff = due.getTime() - start.getTime();
+          const week = Math.max(1, Math.floor(diff / (1000 * 60 * 60 * 24 * 7)) + 1);
+          return week === w.week;
+        }).length;
+
+        return {
+          week: w.week,
+          label: w.label,
+          beforeHours: w.beforeHours,
+          afterHours: w.afterHours,
+          risk: w.risk,
+          optimizedRisk: w.risk,
+          deadlineCount
+        };
+      });
+
+      // Reconstruct collisions
+      const collisions = result.prioritizedTasks
+        .filter(t => t.riskScore >= 75)
+        .map(t => {
+          const d = nextDeadlines.find(item => item.id === t.id);
+          const week = d ? Math.max(1, Math.floor((new Date(d.dueDate).getTime() - new Date(nextSettings.semesterStart).getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1) : 1;
+          return {
+            week,
+            deadlineCount: 1,
+            totalHours: t.priorityScore,
+            severity: t.riskScore >= 75 ? "crunch" as const : "high" as const,
+            deadlines: [{
+              id: t.id,
+              course: t.course,
+              title: t.title,
+              dueDate: d?.dueDate || "",
+              impact: "high" as const
+            }]
+          };
+        });
+
+      setPlan({
+        workloadByWeek,
+        collisions,
+        studyPlan: studySessions,
+        summary: {
+          deadlineCount: nextDeadlines.length,
+          availableHoursPerWeek: nextSettings.availableHoursPerWeek,
+          peakBeforeHours: Math.max(...result.weeklyWorkload.map(w => w.beforeHours)),
+          peakAfterHours: Math.max(...result.weeklyWorkload.map(w => w.afterHours)),
+          peakReductionPercent: 15,
+          crunchWeeks: result.weeklyWorkload.filter(w => w.risk === "crunch").map(w => w.week),
+          productivityScore: 88
+        },
+        suggestion: result.overallExplanation
+      });
+
+      setAiPrioritizedTasks(result.prioritizedTasks);
       setActiveSection("dashboard");
-    } catch {
-      setError("Planner backend is unavailable. Start it with: cd backend && uvicorn app.main:app --reload --port 8000");
+    } catch (err: any) {
+      setError(err.message || "Planner backend is currently unavailable.");
     } finally {
       setIsLoading(false);
     }
@@ -288,6 +381,26 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
           </div>
         </section>
       ) : null}
+
+      {aiPrioritizedTasks.length > 0 ? (
+        <section className="mb-8">
+          <h3 className="text-xl font-bold tracking-tight text-ink mb-4 flex items-center gap-2">
+            <Sparkles className="text-primary" size={20} /> AI Task Prioritization & Explanations
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {aiPrioritizedTasks.slice(0, 6).map((task) => (
+              <ExplanationCard
+                key={task.id}
+                course={task.course}
+                title={task.title}
+                priorityScore={task.priorityScore}
+                riskScore={task.riskScore}
+                reasoning={task.priorityReasoning}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 
@@ -418,6 +531,8 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
           />
         ) : null}
         {activeSection === "analytics" ? analytics : null}
+        {activeSection === "assistant" ? <AIAssistant /> : null}
+        {activeSection === "settings" ? <AISettings userId={user.id} initialProfile={initialProfile} /> : null}
       </section>
     </main>
   );

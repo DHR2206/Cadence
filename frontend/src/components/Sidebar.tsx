@@ -12,10 +12,10 @@ import {
   Sparkles
 } from "lucide-react";
 
-export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics" | "calendar";
+export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics" | "calendar" | "assistant" | "settings";
 
 const navItems: Array<{
-  id: SectionId | "assistant" | "settings";
+  id: SectionId;
   label: string;
   icon: typeof LayoutDashboard;
   dot?: boolean;
@@ -26,8 +26,8 @@ const navItems: Array<{
   { id: "courses", label: "Courses", icon: GraduationCap },
   { id: "study-plan", label: "Study Plan", icon: BookOpenText },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "assistant", label: "AI Assistant", icon: Bot, dot: true, disabled: true },
-  { id: "settings", label: "Settings", icon: Settings, disabled: true }
+  { id: "assistant", label: "AI Assistant", icon: Bot, dot: true },
+  { id: "settings", label: "Settings", icon: Settings }
 ];
 
 type SidebarProps = {

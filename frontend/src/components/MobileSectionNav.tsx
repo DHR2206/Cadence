@@ -4,7 +4,9 @@ const sections: Array<{ id: SectionId; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
   { id: "courses", label: "Courses" },
   { id: "study-plan", label: "Study Plan" },
-  { id: "analytics", label: "Analytics" }
+  { id: "analytics", label: "Analytics" },
+  { id: "assistant", label: "AI Assistant" },
+  { id: "settings", label: "Settings" }
 ];
 
 type MobileSectionNavProps = {
