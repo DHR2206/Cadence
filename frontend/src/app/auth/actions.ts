@@ -108,9 +108,9 @@ export async function forgotPasswordAction(formData: FormData) {
   const email = formValue(formData, "email");
 
   // Determine site origin for redirects
-  const origin = typeof window !== "undefined"
-    ? window.location.origin
-    : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const origin =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://cadence-seven-eta.vercel.app";
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/callback?next=/auth/reset-password`

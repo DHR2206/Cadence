@@ -12,10 +12,12 @@ export async function GET(request: Request) {
       ? await supabase.auth.exchangeCodeForSession(code)
       : { error: new Error("Supabase environment variables are not configured.") };
 
-    if (!error) {
-      return NextResponse.redirect(new URL(next.startsWith("/") ? next : "/", request.url));
-    }
-  }
-
-  return NextResponse.redirect(new URL("/auth/sign-in?error=Unable%20to%20confirm%20your%20session.", request.url));
+if (error) {
+  return NextResponse.redirect(
+    new URL(`/auth/sign-in?error=${encodeURIComponent(error.message)}`,request.url));
 }
+
+return NextResponse.redirect(
+  new URL(next.startsWith("/") ? next : "/", request.url)
+);
+  }}
