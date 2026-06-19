@@ -452,7 +452,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
   );
 
   return (
-   <main className="min-h-screen lg:flex lg:h-screen lg:overflow-hidden">
+    <main className="min-h-screen lg:flex lg:h-screen lg:overflow-hidden">
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}

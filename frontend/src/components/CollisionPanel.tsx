@@ -13,14 +13,14 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-3xl border border-red-200 bg-red-50/70 p-5 shadow-soft">
+      <section className="rounded-3xl border border-[#e5c7bd] bg-[#f7ebe6]/80 p-5 shadow-soft">
         <div className="mb-5 flex gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-700">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1d8d0] text-[#b85d4f]">
             <AlertTriangle size={24} />
           </div>
           <div>
             <p className="text-xl font-bold">{primaryCollision ? "Deadline Collision" : "No Collision Yet"}</p>
-            <p className="mt-1 font-semibold text-red-700">
+            <p className="mt-1 font-semibold text-[#9f493f]">
               {primaryCollision
                 ? `${primaryCollision.deadlineCount} deadline${primaryCollision.deadlineCount === 1 ? "" : "s"} in Week ${primaryCollision.week}`
                 : "Add deadlines or load sample data"}
@@ -30,14 +30,14 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
         {primaryCollision ? (
           <div className="space-y-3">
             {primaryCollision.deadlines.map((deadline) => (
-              <div className="rounded-2xl border border-red-100 bg-white/70 p-4" key={deadline.id}>
+              <div className="rounded-2xl border border-[#e5c7bd] bg-white/72 p-4" key={deadline.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold">{deadline.course}</p>
                   <p className="text-sm text-muted">{deadline.title}</p>
                   <p className="mt-1 text-sm text-slate-700">{new Date(deadline.dueDate).toLocaleDateString()}</p>
                 </div>
-                <span className="rounded-lg bg-red-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700">
+                <span className="rounded-lg bg-[#f1d8d0] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#9f493f]">
                   {deadline.impact}
                 </span>
               </div>
@@ -45,13 +45,13 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-red-100 bg-white/70 p-4 text-sm leading-6 text-slate-700">
+          <p className="rounded-2xl border border-[#e5c7bd] bg-white/72 p-4 text-sm leading-6 text-slate-700">
             Cadence will show collision details here when two or more deadlines land in the same week, or workload crosses the
             high-risk threshold.
           </p>
         )}
         <button
-          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-white transition hover:bg-[#1b4758] disabled:cursor-not-allowed disabled:opacity-60"
           disabled={isLoading}
           onClick={onGenerate}
           type="button"
@@ -61,7 +61,7 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
         </button>
       </section>
 
-      <section className="rounded-3xl border border-blue-200 bg-white/80 p-5 shadow-soft">
+      <section className="rounded-3xl border border-line bg-white/80 p-5 shadow-soft">
         <div className="flex gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-white">
             <Bot size={22} />
