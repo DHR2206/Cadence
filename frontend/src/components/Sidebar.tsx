@@ -1,3 +1,16 @@
+// import {
+//   BarChart3,
+//   Bot,
+//   CalendarDays,
+//   GraduationCap,
+//   HelpCircle,
+//   LayoutDashboard,
+//   LogOut,
+//   BookOpenText,
+//   Plus,
+//   Settings,
+//   Sparkles
+// } from "lucide-react";
 import {
   BarChart3,
   Bot,
@@ -8,8 +21,7 @@ import {
   LogOut,
   BookOpenText,
   Plus,
-  Settings,
-  Sparkles
+  Settings
 } from "lucide-react";
 
 export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics" | "calendar" | "assistant" | "settings";
@@ -51,9 +63,16 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
   return (
     <aside className="hidden min-h-screen w-72 shrink-0 border-r border-primary/20 bg-primary p-5 text-white shadow-soft lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white shadow-glow ring-1 ring-white/20">
+        {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white shadow-glow ring-1 ring-white/20">
           <Sparkles size={20} />
-        </div>
+        </div> */}
+        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-glow">
+        <img
+        src="/logo.jpg"
+        alt="Cadence Logo"
+        className="h-full w-full object-cover"
+          />
+          </div>
         <div>
           <p className="text-lg font-bold text-white">Cadence AI</p>
           <p className="text-sm text-white/65">Academic Workspace</p>
