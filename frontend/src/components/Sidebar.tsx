@@ -49,18 +49,18 @@ function initials(name: string) {
 
 export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, userName }: SidebarProps) {
   return (
-    <aside className="hidden min-h-screen w-72 shrink-0 border-r border-line/70 bg-white/72 p-5 shadow-soft backdrop-blur-xl lg:flex lg:flex-col">
+    <aside className="hidden min-h-screen w-72 shrink-0 border-r border-primary/20 bg-primary p-5 text-white shadow-soft lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white shadow-glow ring-1 ring-white/20">
           <Sparkles size={20} />
         </div>
         <div>
-          <p className="text-lg font-bold text-primary">Cadence AI</p>
-          <p className="text-sm text-muted">Academic Workspace</p>
+          <p className="text-lg font-bold text-white">Cadence AI</p>
+          <p className="text-sm text-white/65">Academic Workspace</p>
         </div>
       </div>
 
-      <button className="mb-8 flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-glow transition hover:-translate-y-0.5 hover:bg-blue-700">
+      <button className="mb-8 flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-primary shadow-glow transition hover:-translate-y-0.5 hover:bg-mist">
         <Plus size={18} />
         New Study Session
       </button>
@@ -73,10 +73,10 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
             <button
               className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
                 active
-                  ? "translate-x-1 border-l-4 border-primary bg-blue-50 text-primary"
+                  ? "translate-x-1 border-l-4 border-white bg-white text-primary shadow-soft"
                   : item.disabled
-                    ? "cursor-not-allowed text-slate-400"
-                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                    ? "cursor-not-allowed text-white/35"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
               }`}
               disabled={item.disabled}
               key={item.label}
@@ -95,13 +95,13 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
         })}
       </nav>
 
-      <div className="mt-8 border-t border-line pt-5">
-        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-700 hover:bg-slate-100" href="mailto:support@example.com">
+      <div className="mt-8 border-t border-white/20 pt-5">
+        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-white/80 hover:bg-white/10 hover:text-white" href="mailto:support@example.com">
           <HelpCircle size={19} />
           Help Center
         </a>
         <button
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100"
+          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm text-white/80 hover:bg-white/10 hover:text-white"
           onClick={onSignOut}
           type="button"
         >
@@ -109,12 +109,12 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
           Logout
         </button>
         <div className="mt-4 flex items-center gap-3 px-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-sm font-bold text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-bold text-primary">
             {initials(userName)}
           </div>
           <div>
-            <p className="font-semibold">{userName}</p>
-            <p className="max-w-40 truncate text-xs text-muted">{userEmail}</p>
+            <p className="font-semibold text-white">{userName}</p>
+            <p className="max-w-40 truncate text-xs text-white/60">{userEmail}</p>
           </div>
         </div>
       </div>

@@ -5,21 +5,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#f8f7ff",
-        panel: "#ffffff",
-        mist: "#eef2ff",
-        primary: "#0f56d9",
-        cyan: "#06b6d4",
-        ink: "#171923",
-        muted: "#62677a",
-        line: "#dde2f2",
-        danger: "#dc2626",
-        warning: "#b45309",
-        sage: "#0f766e"
+        canvas: "#c8dfe9",
+        panel: "#f7fbfc",
+        mist: "#e7f2f5",
+        primary: "#24586a",
+        cyan: "#78b8c6",
+        ink: "#163547",
+        muted: "#5f7380",
+        line: "#b8cdd6",
+        danger: "#b85d4f",
+        warning: "#a96b3c",
+        sage: "#4f7f78"
       },
       boxShadow: {
-        soft: "0 20px 50px rgba(15, 23, 42, 0.06)",
-        glow: "0 20px 50px rgba(37, 99, 235, 0.12)"
+        soft: "0 18px 38px rgba(22, 53, 71, 0.10)",
+        glow: "0 18px 42px rgba(36, 88, 106, 0.18)"
       }
     }
   },
