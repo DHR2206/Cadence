@@ -249,7 +249,7 @@ http://localhost:3000
 
 Live Application:
 
-https://cadence-e9ygbfyc0-dakshrathod2206-1057s-projects.vercel.app
+https://cadence-seven-eta.vercel.app/
 
 GitHub Repository:
 
