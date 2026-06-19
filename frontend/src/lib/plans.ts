@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import type { StudySession, PlannerPlan, PlannerSettings } from "@/lib/plannerApi";
 
+type SessionStatus = Database["public"]["Enums"]["session_status"];
+
 // Helper to convert week and day offsets to actual Date objects in the user's local timezone
 export function calculateSessionDates(
   semesterStart: string, // YYYY-MM-DD
@@ -54,6 +56,179 @@ export function calculateSessionDates(
     startsAt: startsAt.toISOString(),
     endsAt: endsAt.toISOString()
   };
+}
+
+function calculateSessionPosition(startsAt: string, endsAt: string, semesterStart: string) {
+  const startsAtDate = new Date(startsAt);
+  const endsAtDate = new Date(endsAt);
+  const [sYear, sMonth, sDateNum] = semesterStart.split("-").map(Number);
+  const semStart = new Date(sYear, sMonth - 1, sDateNum, 0, 0, 0);
+  const diffMs = startsAtDate.getTime() - semStart.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const week = Math.max(1, Math.floor(diffDays / 7) + 1);
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const formatTime = (d: Date) => {
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  };
+
+  return {
+    week,
+    day: daysOfWeek[startsAtDate.getDay()] || "Mon",
+    start: formatTime(startsAtDate),
+    end: formatTime(endsAtDate),
+    hours: (endsAtDate.getTime() - startsAtDate.getTime()) / (1000 * 60 * 60)
+  };
+}
+
+function mapSessionRowToStudySession(
+  row: Database["public"]["Tables"]["study_sessions"]["Row"] & { assignment?: any },
+  settings: PlannerSettings
+): StudySession {
+  const position = calculateSessionPosition(row.starts_at, row.ends_at, settings.semesterStart);
+  const courseAssignment = row.assignment as any;
+  const course = courseAssignment?.course?.code || courseAssignment?.course?.name || "General";
+
+  return {
+    id: row.id,
+    ...position,
+    course,
+    title: row.title || "Study Session",
+    type: row.type === "deep-work" ? "deep-work" : "study",
+    status: row.status,
+    assignmentId: row.assignment_id || undefined,
+    starts_at: row.starts_at,
+    ends_at: row.ends_at
+  };
+}
+
+async function ensureActiveStudyPlan(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  settings: PlannerSettings
+) {
+  const { data: existingPlan, error: existingError } = await supabase
+    .from("study_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (existingPlan) {
+    return existingPlan;
+  }
+
+  const { data: planRow, error: planError } = await supabase
+    .from("study_plans")
+    .insert({
+      user_id: userId,
+      generated_by: "planner",
+      summary: "Manual study sessions",
+      metadata: {
+        semester_start: settings.semesterStart,
+        semester_weeks: settings.weeks,
+        summary: {
+          available_hours_per_week: settings.availableHoursPerWeek
+        }
+      }
+    })
+    .select()
+    .single();
+
+  if (planError) {
+    throw planError;
+  }
+
+  return planRow;
+}
+
+export async function createStudySession(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  settings: PlannerSettings,
+  session: Omit<StudySession, "id" | "week" | "day" | "start" | "end" | "hours"> & {
+    starts_at: string;
+    ends_at: string;
+  }
+): Promise<StudySession> {
+  const planRow = await ensureActiveStudyPlan(supabase, userId, settings);
+  const { data, error } = await supabase
+    .from("study_sessions")
+    .insert({
+      plan_id: planRow.id,
+      assignment_id: session.assignmentId || null,
+      starts_at: session.starts_at,
+      ends_at: session.ends_at,
+      title: session.title || "Study Session",
+      type: session.type || "study",
+      status: session.status || "scheduled"
+    })
+    .select(`
+      *,
+      assignment:assignments(
+        *,
+        course:courses(*)
+      )
+    `)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapSessionRowToStudySession(data as any, settings);
+}
+
+export async function updateStudySession(
+  supabase: SupabaseClient<Database>,
+  settings: PlannerSettings,
+  sessionId: string,
+  updates: Partial<Pick<StudySession, "title" | "type" | "status" | "starts_at" | "ends_at" | "assignmentId">>
+): Promise<StudySession> {
+  const { data, error } = await supabase
+    .from("study_sessions")
+    .update({
+      title: updates.title,
+      type: updates.type,
+      status: updates.status as SessionStatus | undefined,
+      starts_at: updates.starts_at,
+      ends_at: updates.ends_at,
+      assignment_id: updates.assignmentId || undefined
+    })
+    .eq("id", sessionId)
+    .select(`
+      *,
+      assignment:assignments(
+        *,
+        course:courses(*)
+      )
+    `)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return mapSessionRowToStudySession(data as any, settings);
+}
+
+export async function deleteStudySession(
+  supabase: SupabaseClient<Database>,
+  sessionId: string
+) {
+  const { error } = await supabase
+    .from("study_sessions")
+    .delete()
+    .eq("id", sessionId);
+
+  if (error) {
+    throw error;
+  }
 }
 
 // Save a study plan and all of its associated sessions to Supabase
@@ -196,6 +371,7 @@ export async function loadActiveStudyPlan(
     const course = courseAssignment?.course?.code || courseAssignment?.course?.name || "General";
 
     return {
+      id: row.id,
       week,
       day,
       start: formatTime(startsAtDate),
@@ -204,6 +380,7 @@ export async function loadActiveStudyPlan(
       title: row.title || "Study Session",
       hours: (endsAtDate.getTime() - startsAtDate.getTime()) / (1000 * 60 * 60),
       type: (row.type as "deep-work" | "study") || "study",
+      status: row.status,
       assignmentId: row.assignment_id || undefined,
       starts_at: row.starts_at,
       ends_at: row.ends_at

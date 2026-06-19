@@ -22,7 +22,14 @@ import {
   PlannerSettings
 } from "@/lib/plannerApi";
 import { createBrowserClient } from "@/lib/supabase/browser";
-import { loadActiveStudyPlan, saveStudyPlan, saveSemesterSettings } from "@/lib/plans";
+import {
+  createStudySession,
+  deleteStudySession,
+  loadActiveStudyPlan,
+  saveStudyPlan,
+  saveSemesterSettings,
+  updateStudySession
+} from "@/lib/plans";
 import { AIAssistant } from "@/components/AIAssistant";
 import { AISettings } from "@/components/AISettings";
 import { ExplanationCard } from "@/components/ExplanationCard";
@@ -319,6 +326,63 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
     }
   }
 
+  async function handleCreateSession(session: Parameters<typeof createStudySession>[3]) {
+    setError(null);
+    try {
+      const persistedSession = await createStudySession(supabase, user.id, settings, session);
+      setPlan((current) => ({
+        ...current,
+        studyPlan: [...current.studyPlan, persistedSession].sort((a, b) => {
+          const aTime = a.starts_at ? new Date(a.starts_at).getTime() : 0;
+          const bTime = b.starts_at ? new Date(b.starts_at).getTime() : 0;
+          return aTime - bTime;
+        })
+      }));
+      return persistedSession;
+    } catch {
+      setError("Cadence could not create this study session in Supabase.");
+      throw new Error("Session create failed");
+    }
+  }
+
+  async function handleUpdateSession(
+    sessionId: string,
+    updates: Parameters<typeof updateStudySession>[3]
+  ) {
+    setError(null);
+    try {
+      const persistedSession = await updateStudySession(supabase, settings, sessionId, updates);
+      setPlan((current) => ({
+        ...current,
+        studyPlan: current.studyPlan
+          .map((session) => (session.id === sessionId ? persistedSession : session))
+          .sort((a, b) => {
+            const aTime = a.starts_at ? new Date(a.starts_at).getTime() : 0;
+            const bTime = b.starts_at ? new Date(b.starts_at).getTime() : 0;
+            return aTime - bTime;
+          })
+      }));
+      return persistedSession;
+    } catch {
+      setError("Cadence could not update this study session in Supabase.");
+      throw new Error("Session update failed");
+    }
+  }
+
+  async function handleDeleteSession(sessionId: string) {
+    setError(null);
+    try {
+      await deleteStudySession(supabase, sessionId);
+      setPlan((current) => ({
+        ...current,
+        studyPlan: current.studyPlan.filter((session) => session.id !== sessionId)
+      }));
+    } catch {
+      setError("Cadence could not delete this study session from Supabase.");
+      throw new Error("Session delete failed");
+    }
+  }
+
   async function loadSampleData() {
     setError(null);
     setIsSyncing(true);
@@ -528,6 +592,9 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             sessions={plan.studyPlan}
             deadlines={deadlines}
             settings={settings}
+            onCreateSession={handleCreateSession}
+            onDeleteSession={handleDeleteSession}
+            onUpdateSession={handleUpdateSession}
           />
         ) : null}
         {activeSection === "analytics" ? analytics : null}

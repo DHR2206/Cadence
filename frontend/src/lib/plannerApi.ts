@@ -99,6 +99,7 @@ export type Collision = {
 };
 
 export type StudySession = {
+  id?: string;
   week: number;
   day: string;
   start: string;
@@ -107,6 +108,7 @@ export type StudySession = {
   title: string;
   hours: number;
   type: "deep-work" | "study";
+  status?: "scheduled" | "completed" | "skipped";
   assignmentId?: string;
   starts_at?: string;
   ends_at?: string;
