@@ -1,143 +1,272 @@
-# Cadence
+# Cadence – AI-Powered Deadline Collision Predictor & Academic Planner
 
-Cadence is an AI-powered deadline collision predictor and academic planner for DAU students. It forecasts workload-heavy weeks before they happen, highlights deadline clashes, and generates a balanced study plan so students can avoid last-minute crunch.
+## 🚀 Overview
 
-## Mid-Evaluation Submission
+Cadence is an AI-powered academic planning platform designed to help university students proactively manage their workload.
 
-- **Public GitHub Repository:** https://github.com/DHR2206/cadence
-- **Hosting :** https://cadence-e9ygbfyc0-dakshrathod2206-1057s-projects.vercel.app
-- **Current Stage:** MVP prototype for mid-evaluation review
+Unlike traditional planners that only display deadlines, Cadence predicts workload-heavy weeks before they happen, identifies deadline collisions, and generates balanced study schedules to reduce stress, prevent burnout, and improve academic performance.
 
-## Problem Statement
+Built during the 7-Day AI Buildathon organized by AI Club, Dhirubhai Ambani University.
 
-DAU students manage assignments, quizzes, exams, club commitments, and personal work across scattered platforms such as Moodle, Google Classroom, calendars, notices, and memory. Existing tools show due dates, but they do not predict when deadlines will collide or automatically redistribute effort before a high-pressure week.
+---
 
-Cadence focuses on one core problem: **students realize workload overload too late**. The project helps students identify crunch weeks early, understand which deadlines are causing pressure, and convert academic work into an actionable study schedule.
+## 🎯 Problem Statement
 
-## Current Progress
+Students manage assignments, quizzes, projects, exams, club activities, and personal commitments across multiple platforms such as Moodle, Google Classroom, calendars, notices, and messaging groups.
 
-- Created the required mid-evaluation repository structure with separate `frontend/`, `backend/`, `models/`, `docs/`, and `assets/` directories.
-- Built a rule-based planner engine in `models/` for effort estimation, deadline collision detection, and workload smoothing.
-- Added a FastAPI backend with `/health` and `/plan` endpoints.
-- Built a polished Next.js dashboard for viewing workload risk, upcoming deadlines, and generated study plans.
-- Hosted the frontend MVP on Vercel for review and demo access.
-- Added DAU-style sample semester data for judging-day demonstrations.
-- Added backend planner tests for empty, balanced, overloaded, collision, and replanning scenarios.
+Current tools show due dates but fail to answer critical questions:
 
-## Tech Stack
+* When will my workload become overwhelming?
+* Which deadlines are causing the problem?
+* How should I redistribute my effort beforehand?
 
-- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, lucide-react
-- **Backend:** FastAPI, Python, Pydantic
-- **Planner Engine:** Python rule-based scheduling model
-- **Data:** JSON sample data for the MVP
-- **Testing:** pytest for backend planner tests
-- **Deployment:** Vercel for the frontend; backend currently runs locally for the MVP
+As a result, students often discover workload overload too late, leading to stress, poor planning, and last-minute cramming.
 
-## Planned Features
+Cadence addresses this challenge through intelligent workload forecasting and automated study planning.
 
-- Manual course, task, and deadline entry from the frontend
-- Direct frontend integration with the FastAPI `/plan` endpoint
-- Deadline collision forecast with risk levels and workload-heavy week alerts
-- Auto-generated balanced study plans based on estimated effort and priority
-- Workload timeline showing before and after optimization
-- AI explanation card for schedule changes and recommendations
-- Persistent schedule storage
-- Moodle and Google Classroom import
-- Email or push reminders
-- Calendar export and group project planning
+---
 
-## Repository Structure
+## ✨ Key Features
 
-```text
-cadence/
-├── README.md
-├── docs/
-│   ├── architecture.md
-│   └── mid-evaluation.md
-├── frontend/
-│   └── Next.js dashboard and planner UI
-├── backend/
-│   ├── app/
-│   └── tests/
-├── models/
-│   └── planner.py
-├── assets/
-│   ├── design/
-│   └── sample-data/
-└── LICENSE
-```
+### Smart Deadline Collision Detection
 
-## Setup Instructions
+Identifies overlapping assignments, quizzes, projects, and exams before they create workload bottlenecks.
+
+### Workload Forecasting
+
+Predicts upcoming high-pressure weeks and visualizes workload distribution across the semester.
+
+### AI-Powered Study Plan Generation
+
+Automatically generates balanced study schedules based on:
+
+* Deadline priority
+* Difficulty level
+* Estimated effort
+* Available study hours
+
+### Risk Analysis Dashboard
+
+Provides an overview of:
+
+* Upcoming deadlines
+* Workload intensity
+* Collision severity
+* Planning recommendations
+
+### Adaptive Planning
+
+Updates schedules when new tasks, deadlines, or priorities are introduced.
+
+### Academic Productivity Insights
+
+Helps students distribute effort more effectively throughout the semester.
+
+---
+
+## 🏗 Architecture
+
+Student Input
+↓
+Deadline & Task Analysis
+↓
+Workload Prediction Engine
+↓
+Collision Detection System
+↓
+Schedule Optimization Engine
+↓
+Personalized Study Plan
+↓
+Interactive Dashboard
+
+---
+
+## 🛠 Technology Stack
+
+### Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* Lucide React
 
 ### Backend
 
-From the project root:
+* FastAPI
+* Python
+* Pydantic
+
+### Scheduling Engine
+
+* Rule-Based Planning System
+* Workload Forecasting Algorithms
+* Deadline Collision Detection Logic
+
+### Testing
+
+* Pytest
+
+### Deployment
+
+* Vercel
+
+---
+
+## 🤖 AI Tools & Technologies Used
+
+The following AI tools were used during development:
+
+### Development Assistance
+
+* ChatGPT (OpenAI)
+* Claude (Anthropic)
+
+### Planned AI Enhancements
+
+* Effort estimation using LLMs
+* Personalized study recommendations
+* Intelligent workload balancing
+* Natural-language schedule explanations
+
+No proprietary datasets were used. Current planning logic operates on user-provided academic data and sample semester datasets.
+
+---
+
+## 📊 Impact
+
+Cadence aims to help students:
+
+* Reduce workload spikes
+* Avoid deadline collisions
+* Improve time management
+* Reduce academic stress
+* Increase productivity
+* Better balance academics and extracurricular activities
+
+Target users include over 1,500+ university students managing multiple academic responsibilities each semester.
+
+---
+
+## 🌍 SDG Alignment
+
+### SDG 3 – Good Health and Well-Being
+
+Supports student well-being by reducing stress and burnout caused by workload overload.
+
+### SDG 4 – Quality Education
+
+Improves learning outcomes through better planning, time management, and study consistency.
+
+---
+
+## 🔮 Future Roadmap
+
+* Moodle integration
+* Google Classroom integration
+* Calendar synchronization
+* Persistent user accounts
+* Cloud database support
+* Push notifications
+* Email reminders
+* AI-generated productivity insights
+* Mobile application
+* Collaborative group project planning
+* Calendar export functionality
+
+---
+
+## 📂 Repository Structure
+
+cadence/
+
+├── frontend/
+
+├── backend/
+
+├── models/
+
+├── docs/
+
+├── assets/
+
+├── BLOG.md
+
+├── README.md
+
+└── LICENSE
+
+---
+
+## ⚙️ Local Setup
+
+### Backend
 
 ```bash
 cd backend
-python3 -m venv .venv
+
+python -m venv .venv
+
 source .venv/bin/activate
+
 pip install -r requirements.txt
+
 uvicorn app.main:app --reload --port 8000
 ```
 
-Backend health check:
+Health Check
 
 ```bash
 curl http://localhost:8000/health
 ```
 
-Run backend tests from the project root:
+Run Tests
 
 ```bash
-python3 -m pytest backend/tests
+pytest backend/tests
 ```
 
 ### Frontend
 
-From the project root:
-
 ```bash
 cd frontend
+
 npm install
+
 npm run dev
 ```
 
-Open the local app at:
+Open:
 
 ```text
 http://localhost:3000
 ```
 
-The deployed frontend is available at:
+---
 
-```text
-https://cadence-seven-eta.vercel.app/#
-```
+## 🌐 Deployment
 
-## API Preview
+Live Application:
 
-`POST /plan`
+https://cadence-e9ygbfyc0-dakshrathod2206-1057s-projects.vercel.app
 
-```json
-{
-  "semester_start": "2026-06-22",
-  "weeks": 12,
-  "available_hours_per_week": 25,
-  "deadlines": [
-    {
-      "id": "cs401-project",
-      "course": "CS401",
-      "title": "AI Systems Final Project",
-      "due_date": "2026-07-31",
-      "difficulty": 5,
-      "estimated_hours": 14,
-      "priority": "high"
-    }
-  ]
-}
-```
+GitHub Repository:
 
-## Mid-Evaluation Status
+https://github.com/DHR2206/cadence
 
-Cadence is currently an MVP-quality prototype. The frontend demonstrates the target product experience and is hosted on Vercel, while the backend contains working planning logic that can power the dashboard locally. The next milestone is connecting manual frontend input directly to the FastAPI `/plan` endpoint and adding persistence for generated schedules.
+---
+
+## 👥 Team - Neural Nexus
+
+### Tanvi Nakum
+
+* UI/UX Design
+* Frontend Development
+* Database Design
+
+### Daksh Rathod
+
+* Backend Development
+* AI/ML Logic
+* Deployment & Infrastructure
