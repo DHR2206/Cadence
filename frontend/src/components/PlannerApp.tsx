@@ -466,7 +466,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
               {initialProfile?.university_name || "Academic Workspace"}
             </p>
-            <h1 className="text-4xl font-bold tracking-tight text-ink md:text-5xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
               Cadence AI {initialProfile?.semester ? `• ${initialProfile.semester}` : ""}
             </h1>
             <p className="mt-3 max-w-2xl text-base leading-7 text-muted">
