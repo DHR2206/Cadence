@@ -48,7 +48,7 @@ export function StudyPlanner({
   const cappedHours = Math.min(availableHours, Math.round(totalHours));
 
   return (
-    <section className="grid gap-6 xl:grid-cols-[1fr_24rem]">
+    <section className="grid gap-6 lg:grid-cols-[1fr_22rem] xl:grid-cols-[1fr_24rem]">
       <div className="glass-panel rounded-3xl p-6">
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
