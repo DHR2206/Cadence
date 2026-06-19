@@ -62,19 +62,16 @@ function planSummary(plan: PlannerPlan) {
 }
 
 function stressLabel(plan: PlannerPlan) {
-<<<<<<< HEAD
   if ((plan.summary?.crunchWeeks?.length ?? 0) > 0) {
     return "Elevated";
   }
    if ((plan.collisions?.length ?? 0) > 0) {
-=======
   const summary = planSummary(plan);
-
+   }
   if (summary.crunchWeeks.length > 0) {
     return "Elevated";
   }
   if ((plan.collisions?.length ?? 0) > 0) {
->>>>>>> fix: harden auth flow and profile creation
     return "Watch";
   }
   return "Calm";
