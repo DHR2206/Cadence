@@ -4,7 +4,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { runAgentOrchestrator, AgentResponse } from "@/lib/agents/orchestrator";
 import { getEmbedding } from "@/lib/ai/rag";
 import { generateAIStudyPlan, ScheduledSession } from "@/lib/ai/planning-engine";
-import { syncGoogleClassroom, syncGoogleCalendar, syncMoodle, SyncResult } from "@/lib/services/integrations";
+import {
+  saveIntegrationCredentials,
+  syncGoogleClassroom,
+  syncGoogleCalendar,
+  syncMoodle,
+  SyncResult
+} from "@/lib/services/integrations";
 import { calculateSessionDates } from "@/lib/plans";
 
 // Helper to assert user is authenticated
@@ -92,6 +98,31 @@ export async function triggerSyncAction(
     default:
       throw new Error(`Unsupported sync provider: ${provider}`);
   }
+}
+
+export async function saveMoodleIntegrationAction(moodleUrl: string, token: string) {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) throw new Error("Supabase not configured.");
+
+  const user = await getAuthUser(supabase);
+  const normalizedUrl = moodleUrl.trim().replace(/\/+$/, "");
+  const trimmedToken = token.trim();
+
+  if (!normalizedUrl || !trimmedToken) {
+    throw new Error("Moodle URL and token are required.");
+  }
+
+  try {
+    new URL(normalizedUrl);
+  } catch {
+    throw new Error("Moodle URL must be a valid URL.");
+  }
+
+  return saveIntegrationCredentials(supabase, user.id, {
+    provider: "moodle",
+    externalUserId: normalizedUrl,
+    accessToken: trimmedToken
+  });
 }
 
 /**

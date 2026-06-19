@@ -11,6 +11,16 @@ The backend application is configured using environment variables.
 | `ALLOWED_ORIGINS` | Comma-separated list of origins allowed to make CORS requests. | `http://localhost:3000,http://127.0.0.1:3000` | `https://cadence-app.vercel.app` |
 | `PORT` | The port on which Uvicorn will listen (handled by the hosting platform). | `8080` | `8000` |
 
+## Frontend Secret Configuration
+
+Set `ENCRYPTION_KEY` in the frontend runtime environment before enabling Google or Moodle credential storage. It must decode to exactly 32 bytes and should be generated with:
+
+```bash
+openssl rand -base64 32
+```
+
+Keep the value stable across deployments. Rotating it requires decrypting existing `integrations` credentials with the old key and re-encrypting them with the new key.
+
 ## Docker Deployment
 
 To package and run the backend as a container, use the Dockerfile located at `backend/Dockerfile`.

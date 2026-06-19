@@ -1,5 +1,18 @@
+import "server-only";
+
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import { decrypt, encrypt } from "@/lib/security/encryption";
+
+type IntegrationProvider = Database["public"]["Enums"]["integration_provider"];
+
+interface SaveIntegrationCredentialsInput {
+  provider: IntegrationProvider;
+  externalUserId?: string | null;
+  accessToken: string;
+  refreshToken?: string | null;
+  expiresAt?: string | null;
+}
 
 export interface SyncResult {
   success: boolean;
@@ -7,6 +20,54 @@ export interface SyncResult {
   coursesSynced: number;
   assignmentsSynced: number;
   eventsSynced: number;
+}
+
+export async function saveIntegrationCredentials(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  input: SaveIntegrationCredentialsInput
+) {
+  const encryptedAccessToken = encrypt(input.accessToken);
+  const encryptedRefreshToken = input.refreshToken ? encrypt(input.refreshToken) : null;
+
+  const { data, error } = await supabase
+    .from("integrations")
+    .upsert(
+      {
+        user_id: userId,
+        provider: input.provider,
+        external_user_id: input.externalUserId ?? null,
+        encrypted_token: encryptedAccessToken,
+        refresh_token: encryptedRefreshToken,
+        expires_at: input.expiresAt ?? null
+      },
+      { onConflict: "user_id,provider" }
+    )
+    .select("id, provider, external_user_id, expires_at, created_at, updated_at")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+async function fetchMoodleRest(
+  moodleUrl: string,
+  token: string,
+  params: Record<string, string>
+) {
+  const body = new URLSearchParams({
+    wstoken: token,
+    moodlewsrestformat: "json",
+    ...params
+  });
+
+  return fetch(`${moodleUrl}/webservice/rest/server.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body
+  });
 }
 
 // ----------------------------------------------------
@@ -135,9 +196,7 @@ export async function syncGoogleClassroom(
       throw new Error("Google Classroom integration not configured.");
     }
 
-    // In a real production environment, you would decrypt the token using a KMS or server utility.
-    // For this implementation, we read the token and fetch Google APIs.
-    const accessToken = integration.encrypted_token; // Decrypt utility here
+    const accessToken = decrypt(integration.encrypted_token);
 
     const coursesRes = await fetch("https://classroom.googleapis.com/v1/courses", {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -336,7 +395,7 @@ export async function syncGoogleCalendar(
       throw new Error("Google Calendar integration not configured.");
     }
 
-    const accessToken = integration.encrypted_token;
+    const accessToken = decrypt(integration.encrypted_token);
 
     // Fetch primary calendar events for next 14 days
     const timeMin = new Date().toISOString();
@@ -524,14 +583,12 @@ export async function syncMoodle(
       throw new Error("Moodle integration not configured.");
     }
 
-    // In Moodle, we need a URL and token. Token is saved in encrypted_token.
-    // External_user_id can store the Moodle base URL.
-    const token = integration.encrypted_token;
+    const token = decrypt(integration.encrypted_token);
     const moodleUrl = integration.external_user_id || "https://moodle.example.com";
 
-    // 1. Get user courses
-    const coursesEndpoint = `${moodleUrl}/webservice/rest/server.php?wstoken=${token}&wsfunction=core_enrol_get_users_courses&moodlewsrestformat=json`;
-    const coursesRes = await fetch(coursesEndpoint);
+    const coursesRes = await fetchMoodleRest(moodleUrl, token, {
+      wsfunction: "core_enrol_get_users_courses"
+    });
     if (!coursesRes.ok) throw new Error("Failed to fetch Moodle courses.");
     const coursesList = await coursesRes.json();
 
@@ -572,9 +629,10 @@ export async function syncMoodle(
 
       if (!courseId) continue;
 
-      // 2. Fetch assignments for this course
-      const assignmentsEndpoint = `${moodleUrl}/webservice/rest/server.php?wstoken=${token}&wsfunction=mod_assign_get_assignments&courseids[0]=${c.id}&moodlewsrestformat=json`;
-      const assignRes = await fetch(assignmentsEndpoint);
+      const assignRes = await fetchMoodleRest(moodleUrl, token, {
+        wsfunction: "mod_assign_get_assignments",
+        "courseids[0]": String(c.id)
+      });
       if (assignRes.ok) {
         const assignData = await assignRes.json();
         // Moodle returns courses list containing assignments

@@ -44,6 +44,18 @@ export async function GET(request: NextRequest) {
     provider: "google",
     options: {
       redirectTo: `${origin}/auth/callback`,
+      scopes: [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/classroom.courses.readonly",
+        "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
+        "https://www.googleapis.com/auth/calendar.readonly"
+      ].join(" "),
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent"
+      }
     },
   });
 

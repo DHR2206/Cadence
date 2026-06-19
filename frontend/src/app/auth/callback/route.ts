@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 import { getSupabaseConfig } from "@/lib/supabase/config";
+import { saveIntegrationCredentials } from "@/lib/services/integrations";
 
 /**
  * GET /auth/callback
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     console.error("Failed to exchange OAuth code for session:", error);
@@ -67,6 +68,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(
       new URL("/auth/sign-in?error=oauth", origin)
     );
+  }
+
+  if (data.session?.provider_token) {
+    try {
+      await saveIntegrationCredentials(supabase, user.id, {
+        provider: "google_classroom",
+        externalUserId: user.email ?? user.id,
+        accessToken: data.session.provider_token,
+        refreshToken: data.session.provider_refresh_token ?? null,
+        expiresAt: data.session.expires_at
+          ? new Date(data.session.expires_at * 1000).toISOString()
+          : null
+      });
+    } catch (credentialError) {
+      console.error("Failed to store encrypted Google integration credentials:", credentialError);
+      return NextResponse.redirect(
+        new URL("/auth/sign-in?error=integration_credentials", origin)
+      );
+    }
   }
 
   return response;
