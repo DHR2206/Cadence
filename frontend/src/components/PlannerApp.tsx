@@ -62,6 +62,20 @@ function planSummary(plan: PlannerPlan) {
 }
 
 function stressLabel(plan: PlannerPlan) {
+  const summary = planSummary(plan);
+
+  if (summary.crunchWeeks.length > 0) {
+    return "Elevated";
+  }
+
+  if ((plan.collisions?.length ?? 0) > 0) {
+    return "Watch";
+  }
+
+  return "Calm";
+}
+
+/*function stressLabel(plan: PlannerPlan) {
   if ((plan.summary?.crunchWeeks?.length ?? 0) > 0) {
     return "Elevated";
   }
@@ -76,7 +90,7 @@ function stressLabel(plan: PlannerPlan) {
   }
   return "Calm";
 }
-
+*/
 function workloadScore(plan: PlannerPlan) {
   const summary = planSummary(plan);
 
