@@ -1,4 +1,4 @@
-# Cadence
+# Cadence — Predict. Plan. Perform.
 
 ## AI-Powered Deadline Collision Predictor & Academic Planner
 
