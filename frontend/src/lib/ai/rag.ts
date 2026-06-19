@@ -7,10 +7,25 @@ import { buildStudentContext } from "./context-builder";
 function getApiKey(): string {
   const key = process.env.GEMINI_API_KEY || process.env.Gemini_API_KEY;
   if (!key) {
-    // If not configured, fall back to safe placeholder or throw during active calls
     console.warn("GEMINI_API_KEY is not defined in environment variables.");
   }
   return key || "";
+}
+
+function missingApiKeyResponse(jsonMode: boolean) {
+  if (jsonMode) {
+    return JSON.stringify({
+      overallExplanation:
+        "Cadence generated a deterministic study plan. Configure GEMINI_API_KEY to enable richer AI explanations.",
+      taskExplanations: []
+    });
+  }
+
+  return [
+    "Cadence is running in demo-safe mode because `GEMINI_API_KEY` is not configured.",
+    "",
+    "Your saved deadlines, study plan, prioritization scores, and Supabase-backed memory still work. Add a Gemini API key before the live demo to enable personalized agent responses and richer explanations."
+  ].join("\n");
 }
 
 /**
@@ -59,11 +74,7 @@ export async function generateGeminiContent(
 ): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    return JSON.stringify({
-      error: "Gemini API key is not configured. Please add GEMINI_API_KEY to your .env.local file.",
-      simulated: true,
-      message: "This is a simulated response because your API key is missing."
-    });
+    return missingApiKeyResponse(jsonMode);
   }
 
   const model = modelType === "pro" ? "gemini-2.5-pro" : "gemini-2.5-flash";
@@ -148,6 +159,8 @@ Response guidelines:
 - If recommending changes to a study plan, explain WHY based on difficulty, capacity, or upcoming exams (Explainable AI).
 - If concepts are requested, provide clear academic breakdowns.
 - Reference the student's metrics (focus consistency, stronger/weaker subjects) to customize study recommendations.
+- Use only the provided context for the student's private academic data. If the needed data is missing, say what is missing instead of inventing it.
+- Do not fabricate exact dates, courses, grades, or commitments that are not present in context.
 `;
 
   return generateGeminiContent(fullPrompt, modelType, false, systemInstruction);

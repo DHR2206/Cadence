@@ -46,6 +46,14 @@ export function StudyPlanner({
   const visibleSessions = sessions.slice(0, 12);
   const totalHours = sessions.reduce((sum, session) => sum + session.hours, 0);
   const cappedHours = Math.min(availableHours, Math.round(totalHours));
+  const upcomingSessions = sessions
+    .filter((session) => session.starts_at && new Date(session.starts_at).getTime() >= Date.now())
+    .sort((a, b) => new Date(a.starts_at || 0).getTime() - new Date(b.starts_at || 0).getTime())
+    .slice(0, 3);
+  const insightText =
+    sessions.length > 0
+      ? `Cadence balanced ${sessions.length} study block${sessions.length === 1 ? "" : "s"} across your plan, prioritizing ${primaryFocus || "your highest-pressure course"} during ${preferredStudyTime || "your preferred"} focus windows.`
+      : "Generate a plan after adding deadlines to see personalized scheduling insight here.";
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_22rem] xl:grid-cols-[1fr_24rem]">
@@ -137,12 +145,7 @@ export function StudyPlanner({
               <p className="text-xs text-muted mt-0.5">Automated suggestions</p>
             </div>
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-slate-700">
-            You&apos;ve scheduled heavy quantitative tasks during your peak morning hours. Excellent. Consider adding a 15-minute buffer after Calculus on Wednesday.
-          </p>
-          <button className="mt-4 w-full rounded-xl border border-primary bg-white py-2 text-xs font-bold text-primary hover:bg-blue-50 transition" type="button">
-            Apply Suggestion
-          </button>
+          <p className="mt-4 text-xs leading-relaxed text-slate-700">{insightText}</p>
         </div>
 
         {/* Weekly Workload Progress */}
@@ -168,27 +171,35 @@ export function StudyPlanner({
             <button className="text-xs font-bold text-muted hover:text-ink">•••</button>
           </div>
           <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 rounded-full bg-red-500 shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-ink">Calculus Midterm</p>
-                <p className="text-[10px] font-semibold text-muted mt-0.5">Oct 24 • In 3 days</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 rounded-full bg-orange-500 shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-ink">CS Project Alpha Draft</p>
-                <p className="text-[10px] font-semibold text-muted mt-0.5">Oct 28 • In 7 days</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 rounded-full bg-cyan shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-ink">Physics Lab Report</p>
-                <p className="text-[10px] font-semibold text-muted mt-0.5">Nov 02 • In 12 days</p>
-              </div>
-            </div>
+            {upcomingSessions.length > 0 ? (
+              upcomingSessions.map((session, index) => (
+                <div className="flex items-start gap-3" key={session.id || `${session.title}-${session.starts_at}`}>
+                  <span
+                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                      index === 0 ? "bg-red-500" : index === 1 ? "bg-orange-500" : "bg-cyan"
+                    }`}
+                  />
+                  <div>
+                    <p className="text-xs font-bold text-ink">{session.title}</p>
+                    <p className="mt-0.5 text-[10px] font-semibold text-muted">
+                      {session.starts_at
+                        ? new Date(session.starts_at).toLocaleString([], {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit"
+                          })
+                        : `${session.day} ${session.start}`}{" "}
+                      • {session.course}
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-2xl border border-dashed border-line bg-white/70 p-3 text-xs font-semibold leading-5 text-muted">
+                Upcoming study blocks will appear after you generate or save a plan.
+              </p>
+            )}
           </div>
         </div>
       </aside>
