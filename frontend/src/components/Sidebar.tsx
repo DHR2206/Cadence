@@ -66,11 +66,11 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
         {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white shadow-glow ring-1 ring-white/20">
           <Sparkles size={20} />
         </div> */}
-        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-white shadow-glow">
+        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-glow">
         <img
         src="/logo.jpg"
         alt="Cadence Logo"
-        className="h-full w-full object-cover"
+        className="h-full w-full rounded-full object-cover"
           />
           </div>
         <div>
