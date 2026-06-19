@@ -39,15 +39,72 @@ export async function saveIntegrationCredentials(
         external_user_id: input.externalUserId ?? null,
         encrypted_token: encryptedAccessToken,
         refresh_token: encryptedRefreshToken,
+        status: "connected",
         expires_at: input.expiresAt ?? null
       },
       { onConflict: "user_id,provider" }
     )
-    .select("id, provider, external_user_id, expires_at, created_at, updated_at")
+    .select("id, provider, external_user_id, status, expires_at, last_synced_at, created_at, updated_at")
     .single();
 
   if (error) throw error;
   return data;
+}
+
+async function getGoogleAccessToken(
+  integration: Database["public"]["Tables"]["integrations"]["Row"]
+) {
+  if (integration.status !== "connected") {
+    throw new Error("Google integration is disconnected.");
+  }
+
+  if (!integration.refresh_token) {
+    return decrypt(integration.encrypted_token);
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required to refresh Google integration tokens.");
+  }
+
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: decrypt(integration.refresh_token),
+      grant_type: "refresh_token"
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh Google integration token.");
+  }
+
+  const payload = await response.json();
+  if (!payload.access_token) {
+    throw new Error("Google token refresh response did not include an access token.");
+  }
+
+  return String(payload.access_token);
+}
+
+async function markIntegrationSynced(
+  supabase: SupabaseClient<Database>,
+  integrationId: string
+) {
+  await supabase
+    .from("integrations")
+    .update({
+      last_synced_at: new Date().toISOString(),
+      status: "connected"
+    })
+    .eq("id", integrationId);
 }
 
 async function fetchMoodleRest(
@@ -76,7 +133,7 @@ async function fetchMoodleRest(
 export async function syncGoogleClassroom(
   supabase: SupabaseClient<Database>,
   userId: string,
-  simulate = true
+  simulate = false
 ): Promise<SyncResult> {
   if (simulate) {
     // Generate realistic simulated Classroom data
@@ -196,7 +253,7 @@ export async function syncGoogleClassroom(
       throw new Error("Google Classroom integration not configured.");
     }
 
-    const accessToken = decrypt(integration.encrypted_token);
+    const accessToken = await getGoogleAccessToken(integration);
 
     const coursesRes = await fetch("https://classroom.googleapis.com/v1/courses", {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -285,6 +342,8 @@ export async function syncGoogleClassroom(
       }
     }
 
+    await markIntegrationSynced(supabase, integration.id);
+
     return {
       success: true,
       message: "Successfully synchronized Google Classroom.",
@@ -309,7 +368,7 @@ export async function syncGoogleClassroom(
 export async function syncGoogleCalendar(
   supabase: SupabaseClient<Database>,
   userId: string,
-  simulate = true
+  simulate = false
 ): Promise<SyncResult> {
   if (simulate) {
     const today = new Date();
@@ -388,14 +447,14 @@ export async function syncGoogleCalendar(
       .from("integrations")
       .select("*")
       .eq("user_id", userId)
-      .eq("provider", "google_classroom") // Shared Google OAuth Token
+      .eq("provider", "google_calendar")
       .maybeSingle();
 
     if (intErr || !integration) {
       throw new Error("Google Calendar integration not configured.");
     }
 
-    const accessToken = decrypt(integration.encrypted_token);
+    const accessToken = await getGoogleAccessToken(integration);
 
     // Fetch primary calendar events for next 14 days
     const timeMin = new Date().toISOString();
@@ -454,6 +513,8 @@ export async function syncGoogleCalendar(
       }
     }
 
+    await markIntegrationSynced(supabase, integration.id);
+
     return {
       success: true,
       message: "Successfully synchronized Google Calendar.",
@@ -478,7 +539,7 @@ export async function syncGoogleCalendar(
 export async function syncMoodle(
   supabase: SupabaseClient<Database>,
   userId: string,
-  simulate = true
+  simulate = false
 ): Promise<SyncResult> {
   if (simulate) {
     const simulatedCourses = [
@@ -583,6 +644,10 @@ export async function syncMoodle(
       throw new Error("Moodle integration not configured.");
     }
 
+    if (integration.status !== "connected") {
+      throw new Error("Moodle integration is disconnected.");
+    }
+
     const token = decrypt(integration.encrypted_token);
     const moodleUrl = integration.external_user_id || "https://moodle.example.com";
 
@@ -667,6 +732,8 @@ export async function syncMoodle(
         }
       }
     }
+
+    await markIntegrationSynced(supabase, integration.id);
 
     return {
       success: true,

@@ -81,7 +81,7 @@ export async function saveAIMemoryAction(
  */
 export async function triggerSyncAction(
   provider: "google_classroom" | "google_calendar" | "moodle",
-  simulate = true
+  simulate = false
 ): Promise<SyncResult> {
   const supabase = await createServerSupabaseClient();
   if (!supabase) throw new Error("Supabase not configured.");
@@ -98,6 +98,22 @@ export async function triggerSyncAction(
     default:
       throw new Error(`Unsupported sync provider: ${provider}`);
   }
+}
+
+export async function loadIntegrationStatusesAction() {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) throw new Error("Supabase not configured.");
+
+  const user = await getAuthUser(supabase);
+  const { data, error } = await supabase
+    .from("integrations")
+    .select("provider, status, last_synced_at, updated_at")
+    .eq("user_id", user.id)
+    .in("provider", ["google_classroom", "google_calendar", "moodle"]);
+
+  if (error) throw error;
+
+  return data;
 }
 
 export async function saveMoodleIntegrationAction(moodleUrl: string, token: string) {

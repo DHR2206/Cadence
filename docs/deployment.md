@@ -21,6 +21,8 @@ openssl rand -base64 32
 
 Keep the value stable across deployments. Rotating it requires decrypting existing `integrations` credentials with the old key and re-encrypting them with the new key.
 
+For Google Classroom and Google Calendar sync, also set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to the same OAuth client configured for Supabase Google auth. The app stores Google refresh tokens encrypted and uses these server-side credentials to mint short-lived access tokens during sync.
+
 ## Docker Deployment
 
 To package and run the backend as a container, use the Dockerfile located at `backend/Dockerfile`.

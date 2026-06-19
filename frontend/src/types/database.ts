@@ -263,7 +263,9 @@ export type Database = {
           external_user_id: string | null;
           encrypted_token: string;
           refresh_token: string | null;
+          status: "connected" | "disconnected";
           expires_at: string | null;
+          last_synced_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -274,7 +276,9 @@ export type Database = {
           external_user_id?: string | null;
           encrypted_token: string;
           refresh_token?: string | null;
+          status?: "connected" | "disconnected";
           expires_at?: string | null;
+          last_synced_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -285,7 +289,9 @@ export type Database = {
           external_user_id?: string | null;
           encrypted_token?: string;
           refresh_token?: string | null;
+          status?: "connected" | "disconnected";
           expires_at?: string | null;
+          last_synced_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -372,7 +378,7 @@ export type Database = {
       assignment_source: "manual" | "google_classroom" | "moodle";
       plan_generator: "planner" | "openai" | "hybrid";
       session_status: "scheduled" | "completed" | "skipped";
-      integration_provider: "google_classroom" | "moodle";
+      integration_provider: "google_classroom" | "google_calendar" | "moodle";
       notification_channel: "email" | "push" | "in_app";
       notification_status: "pending" | "sent" | "failed";
     };

@@ -120,8 +120,7 @@ export function AISettings({ userId, initialProfile }: AISettingsProps) {
   const handleTriggerSync = async (provider: "google_classroom" | "google_calendar" | "moodle") => {
     setSyncingProvider(provider);
     try {
-      // Run the sync server action (simulate = true for immediate judging demonstration)
-      const result = await triggerSyncAction(provider, true);
+      const result = await triggerSyncAction(provider, false);
       if (result.success) {
         setSyncStatus((prev) => ({
           ...prev,
