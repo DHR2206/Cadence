@@ -1,90 +1,127 @@
-# Cadence – AI-Powered Deadline Collision Predictor & Academic Planner
+# Cadence
 
-## 🚀 Overview
+## AI-Powered Deadline Collision Predictor & Academic Planner
 
-Cadence is an AI-powered academic planning platform designed to help university students proactively manage their workload.
+Cadence is an AI-assisted academic planning platform that helps students anticipate workload overload before it happens.
 
-Unlike traditional planners that only display deadlines, Cadence predicts workload-heavy weeks before they happen, identifies deadline collisions, and generates balanced study schedules to reduce stress, prevent burnout, and improve academic performance.
+Instead of acting as another calendar that only displays due dates, Cadence analyzes assignments, quizzes, projects, and exams together to predict deadline collisions, identify high-pressure weeks, and generate balanced study plans that reduce stress and improve productivity.
 
-Built during the 7-Day AI Buildathon organized by AI Club, Dhirubhai Ambani University.
-
----
-
-## 🎯 Problem Statement
-
-Students manage assignments, quizzes, projects, exams, club activities, and personal commitments across multiple platforms such as Moodle, Google Classroom, calendars, notices, and messaging groups.
-
-Current tools show due dates but fail to answer critical questions:
-
-* When will my workload become overwhelming?
-* Which deadlines are causing the problem?
-* How should I redistribute my effort beforehand?
-
-As a result, students often discover workload overload too late, leading to stress, poor planning, and last-minute cramming.
-
-Cadence addresses this challenge through intelligent workload forecasting and automated study planning.
+The platform was built during the 7-Day AI Buildathon organized by AI Club, Dhirubhai Ambani University.
 
 ---
 
-## ✨ Key Features
+# The Problem
 
-### Smart Deadline Collision Detection
+University students manage academic responsibilities across multiple platforms including Moodle, Google Classroom, email notifications, messaging groups, calendars, and club announcements.
 
-Identifies overlapping assignments, quizzes, projects, and exams before they create workload bottlenecks.
+Although these tools record deadlines, they fail to answer practical questions that students face every semester:
 
-### Workload Forecasting
+* Which week will become overwhelming?
+* Which deadlines are creating the workload spike?
+* How much should I study each day to avoid last-minute pressure?
+* What should I prioritize when multiple submissions overlap?
 
-Predicts upcoming high-pressure weeks and visualizes workload distribution across the semester.
+As a result, students often discover workload overload only a few days before deadlines, leading to stress, poor planning, reduced learning quality, and burnout.
 
-### AI-Powered Study Plan Generation
+Cadence was designed to solve this problem proactively rather than reactively.
 
-Automatically generates balanced study schedules based on:
+---
 
-* Deadline priority
+# Our Solution
+
+Cadence combines workload forecasting with intelligent scheduling to transform scattered deadlines into an actionable study plan.
+
+By analyzing task difficulty, estimated effort, priorities, and available study hours, the system predicts future workload intensity and recommends how students should distribute their effort across upcoming days.
+
+Instead of warning students after a collision occurs, Cadence predicts it early enough for meaningful intervention.
+
+---
+
+# Key Features
+
+## Deadline Collision Detection
+
+Detects overlapping assignments, quizzes, projects, and examinations that may create unmanageable workload spikes.
+
+## Workload Forecasting
+
+Visualizes workload across the semester and predicts academically intensive periods before they occur.
+
+## AI-Assisted Study Planning
+
+Generates balanced study schedules by considering:
+
+* Deadline urgency
+* Task priority
 * Difficulty level
 * Estimated effort
-* Available study hours
+* Daily available study hours
 
-### Risk Analysis Dashboard
+## Risk Analysis Dashboard
 
-Provides an overview of:
+Provides a consolidated overview of:
 
 * Upcoming deadlines
-* Workload intensity
+* Weekly workload intensity
 * Collision severity
 * Planning recommendations
 
-### Adaptive Planning
+## Adaptive Planning
 
-Updates schedules when new tasks, deadlines, or priorities are introduced.
+Schedules automatically adapt when new tasks or deadlines are introduced.
 
-### Academic Productivity Insights
+## Productivity Insights
 
-Helps students distribute effort more effectively throughout the semester.
+Encourages consistent progress by distributing workload over time instead of concentrating effort near deadlines.
 
 ---
 
-## 🏗 Architecture
+# Why Cadence is Different
 
-Student Input
-↓
+Traditional planners answer:
+
+> "When is my deadline?"
+
+Cadence answers:
+
+* When will I become overloaded?
+* Why will that happen?
+* Which tasks are responsible?
+* What should I start today to avoid it?
+
+This shift from deadline tracking to workload prediction makes Cadence a proactive academic assistant rather than a passive planner.
+
+---
+
+# System Architecture
+
+```
+Student Tasks & Deadlines
+            │
+            ▼
 Deadline & Task Analysis
-↓
+            │
+            ▼
 Workload Prediction Engine
-↓
-Collision Detection System
-↓
-Schedule Optimization Engine
-↓
+            │
+            ▼
+Collision Detection
+            │
+            ▼
+Schedule Optimization
+            │
+            ▼
 Personalized Study Plan
-↓
+            │
+            ▼
 Interactive Dashboard
+```
 
 ---
 
-## 🛠 Technology Stack
+# Technology Stack
 
-### Frontend
+## Frontend
 
 * Next.js
 * React
@@ -92,116 +129,123 @@ Interactive Dashboard
 * Tailwind CSS
 * Lucide React
 
-### Backend
+## Backend
 
 * FastAPI
 * Python
 * Pydantic
 
-### Scheduling Engine
+## Planning Engine
 
-* Rule-Based Planning System
+* Rule-Based Scheduling
 * Workload Forecasting Algorithms
-* Deadline Collision Detection Logic
+* Deadline Collision Detection
+* Schedule Optimization Logic
 
-### Testing
+## Testing
 
 * Pytest
 
-### Deployment
+## Deployment
 
 * Vercel
 
 ---
 
-## 🤖 AI Tools & Technologies Used
+# AI Usage Disclosure
 
-The following AI tools were used during development:
+AI tools were used to accelerate development and improve productivity.
 
-### Development Assistance
+Development Assistance:
 
 * ChatGPT (OpenAI)
 * Claude (Anthropic)
 
-### Planned AI Enhancements
+Current Planning Logic:
 
-* Effort estimation using LLMs
+* Rule-based scheduling engine
+* Workload forecasting algorithms
+* Deadline collision detection
+
+Planned AI Enhancements:
+
+* LLM-based effort estimation
 * Personalized study recommendations
+* Natural language schedule explanations
 * Intelligent workload balancing
-* Natural-language schedule explanations
 
-No proprietary datasets were used. Current planning logic operates on user-provided academic data and sample semester datasets.
+No proprietary datasets were used.
 
----
-
-## 📊 Impact
-
-Cadence aims to help students:
-
-* Reduce workload spikes
-* Avoid deadline collisions
-* Improve time management
-* Reduce academic stress
-* Increase productivity
-* Better balance academics and extracurricular activities
-
-Target users include over 1,500+ university students managing multiple academic responsibilities each semester.
+The system operates entirely on user-provided academic information and sample semester datasets.
 
 ---
 
-## 🌍 SDG Alignment
+# Impact
 
-### SDG 3 – Good Health and Well-Being
+Cadence aims to improve both academic performance and student well-being.
 
-Supports student well-being by reducing stress and burnout caused by workload overload.
+Expected benefits include:
 
-### SDG 4 – Quality Education
+* Reduced workload spikes
+* Early identification of deadline conflicts
+* Better time management
+* Lower academic stress
+* Increased productivity
+* More balanced study habits
+* Improved consistency throughout the semester
 
-Improves learning outcomes through better planning, time management, and study consistency.
-
----
-
-## 🔮 Future Roadmap
-
-* Moodle integration
-* Google Classroom integration
-* Calendar synchronization
-* Persistent user accounts
-* Cloud database support
-* Push notifications
-* Email reminders
-* AI-generated productivity insights
-* Mobile application
-* Collaborative group project planning
-* Calendar export functionality
+The platform is designed for university students managing multiple courses, projects, extracurricular activities, and personal commitments.
 
 ---
 
-## 📂 Repository Structure
+# Sustainable Development Goals
 
+## SDG 3 – Good Health and Well-Being
+
+Supports student mental well-being by reducing stress caused by poor workload distribution and deadline overload.
+
+## SDG 4 – Quality Education
+
+Promotes effective learning through structured planning, consistent study habits, and improved academic organization.
+
+---
+
+# Future Roadmap
+
+* Moodle Integration
+* Google Classroom Integration
+* Calendar Synchronization
+* Persistent User Accounts
+* Cloud Database Support
+* Push Notifications
+* Email Reminders
+* AI-generated Productivity Insights
+* Mobile Application
+* Collaborative Group Planning
+* Calendar Export Support
+
+---
+
+# Repository Structure
+
+```
 cadence/
 
 ├── frontend/
-
 ├── backend/
-
 ├── models/
-
 ├── docs/
-
 ├── assets/
-
 ├── BLOG.md
-
 ├── README.md
-
 └── LICENSE
+```
 
 ---
 
-## ⚙️ Local Setup
+# Local Setup
 
-### Backend
+## Backend
 
 ```bash
 cd backend
@@ -227,7 +271,9 @@ Run Tests
 pytest backend/tests
 ```
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 cd frontend
@@ -239,34 +285,45 @@ npm run dev
 
 Open:
 
-```text
+```
 http://localhost:3000
 ```
 
 ---
 
-## 🌐 Deployment
+# Deployment
 
-Live Application:
+Live Demo
 
 https://cadence-seven-eta.vercel.app/
 
-GitHub Repository:
+GitHub Repository
 
 https://github.com/DHR2206/cadence
 
 ---
 
-## 👥 Team - Neural Nexus
+# Team – Neural Nexus
 
-### Tanvi Nakum
+## Tanvi Nakum
 
 * UI/UX Design
 * Frontend Development
 * Database Design
 
-### Daksh Rathod
+## Daksh Rathod
 
 * Backend Development
-* AI/ML Logic
+* Planning Engine
+* AI Logic
 * Deployment & Infrastructure
+
+---
+
+# Vision
+
+Cadence is built on a simple belief:
+
+Students should spend less time worrying about deadlines and more time learning.
+
+By predicting workload overload before it happens and generating actionable study plans, Cadence aims to become an intelligent academic companion that helps students work consistently, reduce stress, and achieve better outcomes throughout their university journey.
