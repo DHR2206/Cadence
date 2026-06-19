@@ -452,7 +452,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
   );
 
   return (
-    <main className="min-h-screen lg:flex">
+   <main className="min-h-screen lg:flex lg:h-screen lg:overflow-hidden">
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -460,7 +460,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         userEmail={user.email}
         userName={displayName(initialProfile, user.email)}
       />
-      <section className="min-w-0 flex-1 px-5 py-6 md:px-8 lg:px-10">
+      <section className="min-w-0 flex-1 px-5 py-6 md:px-8 lg:h-screen lg:overflow-y-auto lg:px-10">
         <header className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
