@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ensureUserProfile } from "@/lib/auth/profile";
 
 function redirectWithMessage(path: string, type: "error" | "message", message: string): never {
   redirect(`${path}?${type}=${encodeURIComponent(message)}`);
@@ -10,6 +11,10 @@ function redirectWithMessage(path: string, type: "error" | "message", message: s
 function formValue(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+function safeRedirectPath(path: string) {
+  return path.startsWith("/") && !path.startsWith("//") ? path : "/";
 }
 
 export async function signInAction(formData: FormData) 
@@ -24,13 +29,27 @@ export async function signInAction(formData: FormData)
   const password = formValue(formData, "password");
   const next = formValue(formData, "next") || "/";
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    console.error("[auth] email sign-in failed", { email, error: error.message });
     redirectWithMessage("/auth/sign-in", "error", error.message);
   }
 
-  redirect(next.startsWith("/") ? next : "/");
+  console.info("[auth] email sign-in created session", {
+    userId: data.user?.id ?? null,
+    hasSession: Boolean(data.session)
+  });
+
+  if (data.user) {
+    const profile = await ensureUserProfile(supabase, data.user, "email-sign-in");
+
+    if (!profile) {
+      redirectWithMessage("/auth/sign-in", "error", "Signed in, but profile setup failed. Please try again.");
+    }
+  }
+
+  redirect(safeRedirectPath(next));
 }
 
 // Google OAuth is handled by Route Handler at /auth/sign-in/google/route.ts
@@ -47,7 +66,7 @@ export async function signUpAction(formData: FormData) {
   const email = formValue(formData, "email");
   const password = formValue(formData, "password");
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -58,7 +77,24 @@ export async function signUpAction(formData: FormData) {
   });
 
   if (error) {
+    console.error("[auth] email sign-up failed", { email, error: error.message });
     redirectWithMessage("/auth/sign-up", "error", error.message);
+  }
+
+  console.info("[auth] email sign-up completed", {
+    userId: data.user?.id ?? null,
+    hasSession: Boolean(data.session),
+    emailConfirmationLikelyRequired: !data.session
+  });
+
+  if (data.user && data.session) {
+    const profile = await ensureUserProfile(supabase, data.user, "email-sign-up");
+
+    if (!profile) {
+      redirectWithMessage("/auth/sign-up", "error", "Account created, but profile setup failed. Please sign in again.");
+    }
+
+    redirect("/onboarding");
   }
 
   redirectWithMessage("/auth/sign-in", "message", "Account created. Check your email if confirmation is enabled, then sign in.");
@@ -68,6 +104,7 @@ export async function signOutAction() {
   const supabase = await createServerSupabaseClient();
 
   if (supabase) {
+    console.info("[auth] signing out current user");
     await supabase.auth.signOut();
   }
 

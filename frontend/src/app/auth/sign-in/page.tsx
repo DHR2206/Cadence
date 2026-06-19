@@ -13,6 +13,7 @@ type SignInPageProps = {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
+  const googleSignInHref = `/auth/sign-in/google?next=${encodeURIComponent(params.next ?? "/")}`;
 
   return (
     <AuthLayout
@@ -66,7 +67,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         
 {/* Google OAuth via Route Handler (not Server Action — PKCE cookies need real response headers) */}
 <a
-  href="/auth/sign-in/google"
+  href={googleSignInHref}
   className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 font-medium shadow-sm hover:bg-slate-50 transition"
 >
   <svg

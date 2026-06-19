@@ -387,19 +387,25 @@ export async function loadActiveStudyPlan(
     };
   });
 
+  const summaryMetadata = metadata?.summary || {};
+
   // Reconstruct PlannerPlan
   const plan: PlannerPlan = {
     workloadByWeek: metadata?.workload_by_week || [],
     collisions: metadata?.collisions || [],
     studyPlan,
-    summary: metadata?.summary || {
-      deadlineCount: 0,
-      availableHoursPerWeek: settings.availableHoursPerWeek,
-      peakBeforeHours: 0,
-      peakAfterHours: 0,
-      peakReductionPercent: 0,
-      crunchWeeks: [],
-      productivityScore: 82
+    summary: {
+      deadlineCount: summaryMetadata.deadlineCount ?? summaryMetadata.deadline_count ?? 0,
+      availableHoursPerWeek:
+        summaryMetadata.availableHoursPerWeek ??
+        summaryMetadata.available_hours_per_week ??
+        settings.availableHoursPerWeek,
+      peakBeforeHours: summaryMetadata.peakBeforeHours ?? summaryMetadata.peak_before_hours ?? 0,
+      peakAfterHours: summaryMetadata.peakAfterHours ?? summaryMetadata.peak_after_hours ?? 0,
+      peakReductionPercent:
+        summaryMetadata.peakReductionPercent ?? summaryMetadata.peak_reduction_percent ?? 0,
+      crunchWeeks: summaryMetadata.crunchWeeks ?? summaryMetadata.crunch_weeks ?? [],
+      productivityScore: summaryMetadata.productivityScore ?? summaryMetadata.productivity_score ?? 82
     },
     suggestion: planRow.summary || "No severe collision detected."
   };

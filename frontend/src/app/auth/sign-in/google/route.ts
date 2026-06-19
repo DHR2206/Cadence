@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL ||
     new URL(request.url).origin;
+  const requestedNext = request.nextUrl.searchParams.get("next");
+  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/";
+
+  console.info("[auth] starting Google OAuth sign-in", { next });
 
   // Buffer cookies that Supabase sets during signInWithOAuth (PKCE code_verifier)
   let pendingCookies: { name: string; value: string; options?: Record<string, unknown> }[] = [];
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       scopes: ["openid", "email", "profile"].join(" ")
     },
   });
@@ -58,6 +62,7 @@ export async function GET(request: NextRequest) {
   // Create the redirect response, then apply buffered cookies directly to it.
   // This guarantees Set-Cookie headers are part of the 302 response.
   const response = NextResponse.redirect(data.url);
+  response.headers.set("Cache-Control", "private, no-store");
 
   for (const { name, value, options } of pendingCookies) {
     response.cookies.set(name, value, options);

@@ -1,5 +1,6 @@
 import { PlannerApp } from "@/components/PlannerApp";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { ensureUserProfile } from "@/lib/auth/profile";
 import { redirect } from "next/navigation";
 
 function MissingSupabaseConfig() {
@@ -32,13 +33,13 @@ export default async function Home() {
     redirect("/auth/sign-in?next=/");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
+  const profile = await ensureUserProfile(supabase, user, "home-page");
 
-  if (profile && !profile.onboarding_completed) {
+  if (!profile) {
+    redirect("/auth/sign-in?error=profile_setup");
+  }
+
+  if (!profile.onboarding_completed) {
     redirect("/onboarding");
   }
 

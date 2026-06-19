@@ -49,24 +49,47 @@ const defaultSettings: PlannerSettings = {
   availableHoursPerWeek: sampleSettings.availableHoursPerWeek
 };
 
+function planSummary(plan: PlannerPlan) {
+  return {
+    deadlineCount: plan.summary?.deadlineCount ?? 0,
+    availableHoursPerWeek: plan.summary?.availableHoursPerWeek ?? defaultSettings.availableHoursPerWeek,
+    peakBeforeHours: plan.summary?.peakBeforeHours ?? 0,
+    peakAfterHours: plan.summary?.peakAfterHours ?? 0,
+    peakReductionPercent: plan.summary?.peakReductionPercent ?? 0,
+    crunchWeeks: plan.summary?.crunchWeeks ?? [],
+    productivityScore: plan.summary?.productivityScore ?? 82
+  };
+}
+
 function stressLabel(plan: PlannerPlan) {
+<<<<<<< HEAD
   if ((plan.summary?.crunchWeeks?.length ?? 0) > 0) {
     return "Elevated";
   }
    if ((plan.collisions?.length ?? 0) > 0) {
+=======
+  const summary = planSummary(plan);
+
+  if (summary.crunchWeeks.length > 0) {
+    return "Elevated";
+  }
+  if ((plan.collisions?.length ?? 0) > 0) {
+>>>>>>> fix: harden auth flow and profile creation
     return "Watch";
   }
   return "Calm";
 }
 
 function workloadScore(plan: PlannerPlan) {
-  if (plan.summary.deadlineCount === 0) {
+  const summary = planSummary(plan);
+
+  if (summary.deadlineCount === 0) {
     return "0.0";
   }
-  if (plan.summary.availableHoursPerWeek <= 0) {
+  if (summary.availableHoursPerWeek <= 0) {
     return "0.0";
   }
-  const ratio = plan.summary.peakBeforeHours / plan.summary.availableHoursPerWeek;
+  const ratio = summary.peakBeforeHours / summary.availableHoursPerWeek;
   return Math.min(10, Math.max(1, ratio * 8)).toFixed(1);
 }
 
@@ -413,14 +436,16 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
     window.location.assign("/auth/sign-in");
   }
 
+  const safeSummary = planSummary(plan);
+
   const dashboard = (
     <>
       <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard label="Upcoming deadlines" value={`${nextDeadlineCount}`} detail={`${deadlines.length} total`} icon={Clock3} tone="red" />
         <MetricCard label="Workload score" value={workloadScore(plan)} detail="/ 10 peak" icon={Gauge} tone="peach" />
-        <MetricCard label="Study hours" value={`${Math.round(plan.summary.peakAfterHours)}h`} detail="peak after plan" icon={Target} tone="cyan" />
-        <MetricCard label="Predicted stress" value={stressLabel(plan)} detail={`${plan.summary.crunchWeeks.length} crunch week(s)`} icon={Flame} tone="peach" />
-        <MetricCard label="Productivity score" value={`${plan.summary.productivityScore}%`} detail={`+${plan.summary.peakReductionPercent}%`} icon={Zap} tone="blue" />
+        <MetricCard label="Study hours" value={`${Math.round(safeSummary.peakAfterHours)}h`} detail="peak after plan" icon={Target} tone="cyan" />
+        <MetricCard label="Predicted stress" value={stressLabel(plan)} detail={`${safeSummary.crunchWeeks.length} crunch week(s)`} icon={Flame} tone="peach" />
+        <MetricCard label="Productivity score" value={`${safeSummary.productivityScore}%`} detail={`+${safeSummary.peakReductionPercent}%`} icon={Zap} tone="blue" />
       </section>
 
       <section className="mb-8 grid gap-6 xl:grid-cols-[1fr_24rem]">
@@ -489,10 +514,10 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
       <p className="text-2xl font-bold">Analytics</p>
       <p className="mt-1 text-sm text-muted">A compact view of the planner response and feasibility signals.</p>
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <MetricCard label="Peak before" value={`${plan.summary.peakBeforeHours}h`} detail="raw deadline week" icon={Flame} tone="red" />
-        <MetricCard label="Peak after" value={`${plan.summary.peakAfterHours}h`} detail="balanced plan" icon={Target} tone="cyan" />
-        <MetricCard label="Reduction" value={`${plan.summary.peakReductionPercent}%`} detail="peak smoothing" icon={Gauge} tone="blue" />
-        <MetricCard label="Collisions" value={`${plan.collisions.length}`} detail="detected weeks" icon={Clock3} tone="peach" />
+        <MetricCard label="Peak before" value={`${safeSummary.peakBeforeHours}h`} detail="raw deadline week" icon={Flame} tone="red" />
+        <MetricCard label="Peak after" value={`${safeSummary.peakAfterHours}h`} detail="balanced plan" icon={Target} tone="cyan" />
+        <MetricCard label="Reduction" value={`${safeSummary.peakReductionPercent}%`} detail="peak smoothing" icon={Gauge} tone="blue" />
+        <MetricCard label="Collisions" value={`${plan.collisions?.length ?? 0}`} detail="detected weeks" icon={Clock3} tone="peach" />
       </div>
       <div className="mt-6 overflow-hidden rounded-2xl border border-line bg-white/75">
         <div className="grid grid-cols-5 bg-slate-50 px-4 py-3 text-xs font-bold uppercase tracking-wide text-muted">

@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { saveIntegrationCredentials } from "@/lib/services/integrations";
+import { ensureUserProfile } from "@/lib/auth/profile";
 
 /**
  * GET /auth/callback
@@ -17,9 +18,17 @@ import { saveIntegrationCredentials } from "@/lib/services/integrations";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const next = searchParams.get("next");
   const integration = searchParams.get("integration");
   const isGoogleIntegration =
     integration === "google_classroom" || integration === "google_calendar";
+  const redirectPath = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
+
+  console.info("[auth] callback received", {
+    hasCode: Boolean(code),
+    integration,
+    redirectPath
+  });
 
   if (!code) {
     return NextResponse.redirect(
@@ -36,8 +45,9 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(
-    new URL(isGoogleIntegration ? "/settings/integrations?connected=google" : "/", origin)
+    new URL(isGoogleIntegration ? "/settings/integrations?connected=google" : redirectPath, origin)
   );
+  response.headers.set("Cache-Control", "private, no-store");
 
   const supabase = createServerClient<Database>(config.url, config.publishableKey, {
     cookies: {
@@ -59,19 +69,35 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    console.error("Failed to exchange OAuth code for session:", error);
+    console.error("[auth] failed to exchange OAuth code for session", {
+      error: error.message
+    });
     return NextResponse.redirect(
       new URL("/auth/sign-in?error=oauth", origin)
     );
   }
+
+  console.info("[auth] OAuth code exchanged for session", {
+    hasSession: Boolean(data.session),
+    expiresAt: data.session?.expires_at ?? null
+  });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
+    console.error("[auth] callback session did not resolve a user");
     return NextResponse.redirect(
       new URL("/auth/sign-in?error=oauth", origin)
+    );
+  }
+
+  const profile = await ensureUserProfile(supabase, user, "auth-callback");
+
+  if (!profile) {
+    return NextResponse.redirect(
+      new URL("/auth/sign-in?error=profile_setup", origin)
     );
   }
 
@@ -93,7 +119,7 @@ export async function GET(request: NextRequest) {
           : null
       });
     } catch (credentialError) {
-      console.error("Failed to store encrypted Google integration credentials:", credentialError);
+      console.error("[auth] failed to store encrypted Google integration credentials", credentialError);
       return NextResponse.redirect(
         new URL("/settings/integrations?error=integration_credentials", origin)
       );

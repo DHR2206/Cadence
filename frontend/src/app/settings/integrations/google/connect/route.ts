@@ -78,6 +78,8 @@ export async function GET(request: NextRequest) {
   }
 
   const response = NextResponse.redirect(data.url);
+  response.headers.set("Cache-Control", "private, no-store");
+
   for (const { name, value, options } of pendingCookies) {
     response.cookies.set(name, value, options);
   }
