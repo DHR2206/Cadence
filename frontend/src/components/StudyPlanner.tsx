@@ -100,7 +100,7 @@ export function StudyPlanner({
           </span>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-5">
+       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {days.map((day) => (
             <div className="min-h-52 rounded-2xl bg-slate-50/80 p-3" key={day}>
               <p className="mb-3 text-center text-sm font-semibold text-slate-700">{day}</p>
