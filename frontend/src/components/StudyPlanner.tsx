@@ -102,13 +102,13 @@ export function StudyPlanner({
 
        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {days.map((day) => (
-            <div className="min-h-52 rounded-2xl bg-slate-50/80 p-3" key={day}>
+           <div className="min-h-52 rounded-2xl border border-line bg-white p-3 shadow-sm hover:shadow-md transition-all" key={day}>
               <p className="mb-3 text-center text-sm font-semibold text-slate-700">{day}</p>
               <div className="space-y-3">
                 {visibleSessions
                   .filter((block) => block.day === day)
                   .map((block) => (
-                    <div className={`rounded-xl border p-3 ${tones[toneForSession(block)]}`} key={`${block.week}-${block.day}-${block.start}-${block.title}`}>
+                   <div className={`rounded-xl border p-3 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg cursor-pointer ${tones[toneForSession(block)]}`} key={`${block.week}-${block.day}-${block.start}-${block.title}`}>
                       <p className="text-xs font-semibold">{block.start} - {block.end}</p>
                       <p className="mt-2 font-bold">{block.course}</p>
                       <p className="mt-1 text-sm">{block.title}</p>
@@ -127,7 +127,7 @@ export function StudyPlanner({
 
       <aside className="space-y-6">
         {/* Cadence Insight Bot Box */}
-        <div className="rounded-3xl border border-blue-100 bg-blue-50/50 p-5 shadow-soft">
+        <div className="rounded-3xl border border-primary/20 bg-gradient-to-br from-blue-50 to-cyan-50 p-5 shadow-soft">
           <div className="flex gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
               <Bot size={20} />
@@ -146,7 +146,7 @@ export function StudyPlanner({
         </div>
 
         {/* Weekly Workload Progress */}
-        <div className="rounded-3xl border border-line bg-white p-5 shadow-soft">
+       <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50 p-5 shadow-soft">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Weekly workload</p>
           <div className="mt-4 flex items-end gap-2">
             <p className="text-3xl font-extrabold text-ink">{cappedHours}</p>
@@ -162,7 +162,7 @@ export function StudyPlanner({
         </div>
 
         {/* Upcoming Milestones */}
-        <div className="rounded-3xl border border-line bg-white p-5 shadow-soft">
+       <div className="rounded-3xl border border-line bg-gradient-to-br from-white to-slate-50 p-5 shadow-soft">
           <div className="flex justify-between items-center mb-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Upcoming Milestones</p>
             <button className="text-xs font-bold text-muted hover:text-ink">•••</button>
