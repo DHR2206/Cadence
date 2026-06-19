@@ -50,10 +50,10 @@ const defaultSettings: PlannerSettings = {
 };
 
 function stressLabel(plan: PlannerPlan) {
-  if (plan.summary.crunchWeeks.length > 0) {
+  if ((plan.summary?.crunchWeeks?.length ?? 0) > 0) {
     return "Elevated";
   }
-  if (plan.collisions.length > 0) {
+   if ((plan.collisions?.length ?? 0) > 0) {
     return "Watch";
   }
   return "Calm";
