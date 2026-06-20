@@ -307,6 +307,16 @@ Live Demo
 
 https://cadence-seven-eta.vercel.app/
 
+Demo Test Account
+
+For quick testing of the application, use the following demo credentials:
+
+**Email:** `usertest@gmail.com`
+**Password:** `usertest`
+
+> Note: This account is intended only for demo and evaluation purposes. Please avoid modifying or deleting test data unless necessary.
+
+
 GitHub Repository
 
 https://github.com/DHR2206/cadence
