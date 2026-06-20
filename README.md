@@ -243,6 +243,16 @@ cadence/
 
 ---
 
+## Project Status
+
+Cadence is currently a hackathon prototype and is not yet production-ready.
+
+Google OAuth is operating in testing mode; therefore, the **"Continue with Google"** feature is available only to authorized test users. Public access will be enabled after Google OAuth verification and production deployment are completed.
+
+Some authentication-related functionality may be limited during this testing phase.
+
+---
+
 # Local Setup
 
 ## Backend
