@@ -12,7 +12,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+     <body className="pb-20">
         <AuthStateLogger />
         {children}
         <SiteFooter />
