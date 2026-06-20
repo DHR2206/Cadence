@@ -131,9 +131,7 @@ Interactive Dashboard
 
 ## Backend
 
-* FastAPI
-* Python
-* Pydantic
+*Supabase
 
 ## Planning Engine
 
@@ -158,8 +156,8 @@ AI tools were used to accelerate development and improve productivity.
 
 Development Assistance:
 
-* ChatGPT (OpenAI)
-* Claude (Anthropic)
+* OpenAI
+* Deepmind
 
 Current Planning Logic:
 
