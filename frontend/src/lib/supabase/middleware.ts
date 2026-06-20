@@ -5,6 +5,7 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import { ensureUserProfile } from "@/lib/auth/profile";
 
 const authRoutes = ["/auth/sign-in", "/auth/sign-up", "/auth/callback", "/auth/forgot-password"];
+const publicRoutes = ["/about", "/privacy", "/terms", "/oauth-info"];
 
 function preventAuthResponseCaching(response: NextResponse) {
   response.headers.set("Cache-Control", "private, no-store");
@@ -62,8 +63,9 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
-  if (!user && !isAuthRoute) {
+  if (!user && !isAuthRoute && !isPublicRoute) {
     return redirectWithSessionCookies(request, response, (redirectUrl) => {
       redirectUrl.pathname = "/auth/sign-in";
       redirectUrl.searchParams.set("next", pathname);
@@ -81,7 +83,7 @@ export async function updateSession(request: NextRequest) {
     const isOnboardingRoute = pathname.startsWith("/onboarding");
 
     // Force onboarding if incomplete
-    if (profile && !profile.onboarding_completed && !isOnboardingRoute && !isAuthRoute) {
+    if (profile && !profile.onboarding_completed && !isOnboardingRoute && !isAuthRoute && !isPublicRoute) {
       return redirectWithSessionCookies(request, response, (redirectUrl) => {
         redirectUrl.pathname = "/onboarding";
         redirectUrl.search = "";

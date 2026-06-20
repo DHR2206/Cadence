@@ -10,6 +10,7 @@ type CollisionPanelProps = {
 
 export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }: CollisionPanelProps) {
   const primaryCollision = collisions[0];
+  const primaryDeadlines = primaryCollision?.deadlines ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,9 +28,9 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
             </p>
           </div>
         </div>
-        {primaryCollision ? (
+        {primaryCollision && primaryDeadlines.length > 0 ? (
           <div className="space-y-3">
-            {primaryCollision.deadlines.map((deadline) => (
+            {primaryDeadlines.map((deadline) => (
               <div className="rounded-2xl border border-[#e5c7bd] bg-white/72 p-4" key={deadline.id}>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -44,6 +45,11 @@ export function CollisionPanel({ collisions, suggestion, isLoading, onGenerate }
             </div>
             ))}
           </div>
+        ) : primaryCollision ? (
+          <p className="rounded-2xl border border-[#e5c7bd] bg-white/72 p-4 text-sm leading-6 text-slate-700">
+            Cadence detected a high-risk workload week, but the saved collision details need to be regenerated. Use Auto-fix
+            Schedule to refresh the plan with deadline-level explanations.
+          </p>
         ) : (
           <p className="rounded-2xl border border-[#e5c7bd] bg-white/72 p-4 text-sm leading-6 text-slate-700">
             Cadence will show collision details here when two or more deadlines land in the same week, or workload crosses the

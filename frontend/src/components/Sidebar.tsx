@@ -23,6 +23,7 @@ import {
   Plus,
   Settings
 } from "lucide-react";
+import Image from "next/image";
 
 export type SectionId = "dashboard" | "courses" | "study-plan" | "analytics" | "calendar" | "assistant" | "settings";
 
@@ -67,12 +68,14 @@ export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, 
           <Sparkles size={20} />
         </div> */}
         <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white shadow-glow">
-        <img
-        src="/logo.jpg"
-        alt="Cadence Logo"
-        className="h-full w-full rounded-full object-cover"
+          <Image
+            src="/logo.jpg"
+            alt="Cadence logo"
+            width={48}
+            height={48}
+            className="h-full w-full rounded-full object-cover"
           />
-          </div>
+        </div>
         <div>
           <p className="text-lg font-bold text-white">Cadence AI</p>
           <p className="text-sm text-white/65">Academic Workspace</p>

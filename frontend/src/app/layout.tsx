@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
 import { AuthStateLogger } from "@/components/AuthStateLogger";
+import { SiteFooter } from "@/components/SiteFooter";
+import { metadata } from "@/app/metadata";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Cadence AI",
-  description: "AI-powered deadline collision predictor and academic planner for DAU students."
-};
+export { metadata };
 
 export default function RootLayout({
   children
@@ -17,6 +15,7 @@ export default function RootLayout({
       <body>
         <AuthStateLogger />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

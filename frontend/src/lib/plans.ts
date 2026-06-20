@@ -102,6 +102,42 @@ function mapSessionRowToStudySession(
   };
 }
 
+function normalizeCollisions(value: unknown): PlannerPlan["collisions"] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((collision: any) => {
+      const severity =
+        collision?.severity === "crunch" ||
+        collision?.severity === "high" ||
+        collision?.severity === "medium" ||
+        collision?.severity === "low"
+          ? collision.severity
+          : ("crunch" as const);
+      const deadlines = Array.isArray(collision?.deadlines)
+        ? collision.deadlines.map((deadline: any) => ({
+            id: String(deadline?.id ?? `${collision?.week ?? "week"}-${deadline?.title ?? "deadline"}`),
+            course: String(deadline?.course ?? "Course"),
+            title: String(deadline?.title ?? "High-risk deadline"),
+            dueDate: String(deadline?.dueDate ?? deadline?.due_date ?? ""),
+            impact: deadline?.impact === "medium" ? ("medium" as const) : ("high" as const)
+          }))
+        : [];
+      const deadlineCount = collision?.deadlineCount ?? collision?.deadline_count ?? deadlines.length;
+
+      return {
+        week: Number(collision?.week ?? 1),
+        deadlineCount: Number(deadlineCount || 1),
+        totalHours: Number(collision?.totalHours ?? collision?.total_hours ?? collision?.priorityScore ?? 0),
+        severity,
+        deadlines
+      };
+    })
+    .filter((collision) => Number.isFinite(collision.week));
+}
+
 async function ensureActiveStudyPlan(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -392,7 +428,7 @@ export async function loadActiveStudyPlan(
   // Reconstruct PlannerPlan
   const plan: PlannerPlan = {
     workloadByWeek: metadata?.workload_by_week || [],
-    collisions: metadata?.collisions || [],
+    collisions: normalizeCollisions(metadata?.collisions),
     studyPlan,
     summary: {
       deadlineCount: summaryMetadata.deadlineCount ?? summaryMetadata.deadline_count ?? 0,
