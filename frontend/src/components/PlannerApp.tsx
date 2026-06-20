@@ -560,7 +560,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         userEmail={user.email}
         userName={displayName(initialProfile, user.email)}
       />
-      <section className="min-w-0 flex-1 lg:ml-72 px-5 py-6 pb-28 md:px-8 lg:px-10 overflow-y-auto">
+      <section className="min-w-0 flex-1 lg:ml-72 flex flex-col min-h-screen px-5 py-6 md:px-8 lg:px-10">
         <header className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
@@ -594,7 +594,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             </button>
           </div>
         </header>
-
+        <div className="flex-1">
         <MobileSectionNav activeSection={activeSection} onSectionChange={setActiveSection} />
 
         {error ? (
@@ -636,6 +636,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         {activeSection === "analytics" ? analytics : null}
         {activeSection === "assistant" ? <AIAssistant /> : null}
         {activeSection === "settings" ? <AISettings userId={user.id} initialProfile={initialProfile} /> : null}
+        </div>
       </section>
     </main>
   );
