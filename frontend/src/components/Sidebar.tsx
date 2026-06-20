@@ -62,7 +62,7 @@ function initials(name: string) {
 
 export function Sidebar({ activeSection, onSectionChange, onSignOut, userEmail, userName }: SidebarProps) {
   return (
-    <aside className="hidden min-h-screen w-72 shrink-0 border-r border-primary/20 bg-primary p-5 text-white shadow-soft lg:flex lg:flex-col">
+    <aside className="fixed left-0 top-0 hidden h-screen w-72 border-r border-primary/20 bg-primary p-5 text-white shadow-soft lg:flex lg:flex-col">
       <div className="mb-8 flex items-center gap-3">
         {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 text-white shadow-glow ring-1 ring-white/20">
           <Sparkles size={20} />
