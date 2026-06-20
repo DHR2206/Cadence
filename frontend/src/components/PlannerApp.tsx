@@ -1,5 +1,6 @@
 "use client";
 
+import { SiteFooter } from "@/components/SiteFooter";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, Clock3, Flame, Gauge, Target, Zap, Sparkles } from "lucide-react";
 import type { Tables } from "@/types/database";
@@ -552,7 +553,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
   );
 
   return (
-   <main className="min-h-screen lg:flex">
+   <main className="min-h-screen flex bg-slate-50">
       <Sidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -560,7 +561,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         userEmail={user.email}
         userName={displayName(initialProfile, user.email)}
       />
-      <section className="min-w-0 flex-1 lg:ml-72 flex flex-col min-h-screen px-5 py-6 md:px-8 lg:px-10">
+      <section className="flex-1 lg:ml-72 flex flex-col min-h-screen">
         <header className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-center">
           <div>
             <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
@@ -594,7 +595,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
             </button>
           </div>
         </header>
-        <div className="flex-1">
+        <div className="flex-1 px-5 py-6 md:px-8 lg:px-10">
         <MobileSectionNav activeSection={activeSection} onSectionChange={setActiveSection} />
 
         {error ? (
@@ -637,6 +638,7 @@ export function PlannerApp({ user, initialProfile }: PlannerAppProps) {
         {activeSection === "assistant" ? <AIAssistant /> : null}
         {activeSection === "settings" ? <AISettings userId={user.id} initialProfile={initialProfile} /> : null}
         </div>
+        <SiteFooter />
       </section>
     </main>
   );
